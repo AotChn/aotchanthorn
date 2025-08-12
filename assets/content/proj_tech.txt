@@ -1,0 +1,8 @@
+C++ | Python | SDL
+C++ | SDL
+Python | Whisper | OpenAi API | Flask
+C++ | SFML
+C++ | SFML
+C++ | SFML
+C++ | SFML
+C++ | SFML 
