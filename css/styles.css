@@ -141,7 +141,7 @@ body {
     color: white
 }
 
-.home-content .left #overview button {
+.home-content .left #overview a {
     all: unset;
     background: none;
     border: 1px white solid;
@@ -153,7 +153,7 @@ body {
     padding-bottom: 10px;
 }
 
-.home-content .left #overview button:hover { 
+.home-content .left #overview a:hover { 
     /* background-color: green; */
     transform: scale(1.02);
     color: purple;
@@ -280,4 +280,10 @@ body {
 
 .about-me {
     color: white;
+}
+
+.OpenTopography-attribution {
+  color: white;
+  margin-bottom: 20px;
+  height: 50px;
 }

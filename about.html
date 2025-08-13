@@ -6,6 +6,7 @@
     <title>about</title>
     <link rel="icon" type="image/png" href="assets/content/oat.png">
     <link id="theme-stylesheet" rel="stylesheet" href="css/styles.css">
+    <link id="theme-stylesheet" rel="stylesheet" href="css/secret.css">
     <script src="https://cdn.jsdelivr.net/npm/geotiff@2.1.3/dist-browser/geotiff.min.js"></script>
 </head>
 <body>
@@ -22,14 +23,30 @@
 </div>
 
 <div class="about-me"> I think everyone embodies some sort of narrative. 
-    <br> Mine is I want something interesting to do
+    <br> I want something interesting to do
     <br> Whether in work or in leisure 
     <br> I strive to make everything I envision a reality
+    <br> <mark style="background-color: lightgreen; color: black;">I am reachable at 818-588-8399 or chanthorn@berkeley.edu</mark>
+    <br> Below is El Capitan
+</div>
+
+<div class="gate">
+<h3>My Blog</h3>
+<p class="hint">Email me for code</p>
+<form id="unlock-form" autocomplete="off">
+    <input id="pw" type="password" placeholder="Your best guess" autocomplete="current-password" required />
+    <button id="unlock" type="submit">Unlock</button>
+</form>
+
+<div id="msg" class="hint" role="status" aria-live="polite"></div>
 </div>
 
 <main id="scene"></main>
 
-    <!-- <script src="js/script.js"></script> -->
+<div class="OpenTopography-attribution"> Topology Data from OpenTopography</div>
+
+
     <script type="module" src="js/elevation.js"></script>
+    <script type="module" src="js/gate.js"></script>
 </body>
 </html>

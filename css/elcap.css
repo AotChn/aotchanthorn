@@ -72,3 +72,8 @@ html, body {
   z-index: 2;
   pointer-events: none;
 }
+
+.OpenTopography-attribution {
+  color: white;
+  background-color: red;
+}

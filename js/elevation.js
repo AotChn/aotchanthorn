@@ -42,6 +42,7 @@ controls.keyPanSpeed = 50;
 controls.listenToKeyEvents(window);
 controls.enableZoom = false;
 
+
 renderer.domElement.addEventListener('wheel', (event) => {
   event.preventDefault();
   const rotateStep = 0.02; 
