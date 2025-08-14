@@ -43,11 +43,11 @@ controls.listenToKeyEvents(window);
 controls.enableZoom = false;
 
 
-renderer.domElement.addEventListener('wheel', (event) => {
-  event.preventDefault();
-  const rotateStep = 0.02; 
-  controls.rotateUp(event.deltaY * rotateStep / 100);
-});
+// renderer.domElement.addEventListener('wheel', (event) => {
+//   event.preventDefault();
+//   const rotateStep = 0.02; 
+//   controls.rotateUp(event.deltaY * rotateStep / 100);
+// });
 
 /*---------------------------------
 // LIGHTING
