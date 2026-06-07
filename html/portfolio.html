@@ -14,7 +14,14 @@
 
 <nav>
   <a class="nav-logo" href="portfolio.html">Main</a>
-  <div class="nav-actions">
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav-links" aria-label="Toggle navigation">
+    <span class="nav-toggle-lines" aria-hidden="true">
+      <span class="nav-toggle-line"></span>
+      <span class="nav-toggle-line"></span>
+      <span class="nav-toggle-line"></span>
+    </span>
+  </button>
+  <div class="nav-actions" id="site-nav-links">
     <a class="clink small active" href="portfolio.html">Home</a>
     <a class="clink small" href="about.html">About</a>
     <a class="clink small" href="work.html">Work</a>
@@ -52,6 +59,7 @@
 </main>
 
 <script src="../js/life-updates.js"></script>
+<script src="../js/nav.js"></script>
 
 <footer class="page-footer">
   <span>Current as of June 7, 2026</span>

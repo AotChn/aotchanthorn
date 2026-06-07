@@ -12,7 +12,15 @@
       slug: "horse-bets",
       label: "May 2026 · Game",
       title: "Horse Bets",
-      summary: "One of my fond memories from my childhood was going to the horse track with my family. I wanted to build a little horse betting game to capture some of that nostalgia. And after breifly playing a bit of balatro I think I have a fun idea. Release date: IDEALLY AUG 2026",
+      summary: "One of my fond memories from my childhood was going to the horse track with my family. I wanted to build a little horse betting game to capture some of that nostalgia. And after breifly playing a bit of balatro I think I have a fun idea. Release date: TBD",
+      media: [
+        {
+          type: "video",
+          src: "../assets/horse_bets.mp4",
+          mimeType: "video/mp4",
+          caption: "Early Dev footage"
+        }
+      ],
       pinned: true
     },
     {
@@ -45,6 +53,22 @@
   //   label: "",
   //   title: "",
   //   summary: "",
+  //   details: "",
+  //   media: [
+  //     {
+  //       type: "image",
+  //       src: "../assets/example.jpg",
+  //       alt: "",
+  //       caption: ""
+  //     },
+  //     {
+  //       type: "video",
+  //       src: "../assets/example.mp4",
+  //       mimeType: "video/mp4",
+  //       poster: "",
+  //       caption: ""
+  //     }
+  //   ],
   //   pinned: false
   // }
 
@@ -83,6 +107,7 @@
     card.tabIndex = 0;
     card.setAttribute("role", "button");
     card.setAttribute("aria-label", "Open life update: " + update.title);
+    card.setAttribute("aria-haspopup", "dialog");
 
     const meta = createElement("div", "update-card-meta", update.label);
     const title = createElement("h2", "update-card-title", update.title);
@@ -93,6 +118,40 @@
     card.appendChild(copy);
 
     return card;
+  }
+
+  function createMediaNode(item) {
+    const entry = createElement("figure", "project-modal-media-entry");
+    const frame = createElement("div", "project-modal-media-frame");
+
+    if (item.type === "video") {
+      const video = document.createElement("video");
+      video.controls = true;
+      video.playsInline = true;
+      video.preload = "metadata";
+
+      if (item.poster) video.poster = item.poster;
+
+      const source = document.createElement("source");
+      source.src = item.src;
+      if (item.mimeType) source.type = item.mimeType;
+
+      video.appendChild(source);
+      frame.appendChild(video);
+    } else {
+      const image = document.createElement("img");
+      image.src = item.src;
+      image.alt = item.alt || "";
+      frame.appendChild(image);
+    }
+
+    entry.appendChild(frame);
+
+    if (item.caption) {
+      entry.appendChild(createElement("figcaption", "project-modal-media-caption", item.caption));
+    }
+
+    return entry;
   }
 
   function renderHomeUpdates() {
@@ -114,11 +173,20 @@
     const olderButton = document.querySelector("[data-updates-older]");
     const newerButton = document.querySelector("[data-updates-newer]");
     const countLabel = document.querySelector("[data-updates-count]");
+    const memoModal = document.getElementById("memo-modal");
+    const memoModalTag = document.getElementById("memo-modal-tag");
+    const memoModalTitle = document.getElementById("memo-modal-title");
+    const memoModalSummary = document.getElementById("memo-modal-summary");
+    const memoModalMedia = document.getElementById("memo-modal-media");
+    const memoModalDetails = document.getElementById("memo-modal-details");
+    const memoModalClose = document.getElementById("memo-modal-close");
 
-    if (!updatesList || !olderButton || !newerButton || !countLabel) return;
+    if (!updatesList || !olderButton || !newerButton || !countLabel || !memoModal || !memoModalTag || !memoModalTitle || !memoModalSummary || !memoModalMedia || !memoModalDetails || !memoModalClose) return;
 
     let targetSlug = getHashSlug();
     let shouldScrollToTarget = Boolean(targetSlug);
+    let shouldOpenTargetModal = Boolean(targetSlug);
+    let lastMemoTrigger = null;
     const highlightedIndex = lifeUpdates.findIndex(function (update) {
       return update.slug === targetSlug;
     });
@@ -165,6 +233,47 @@
       selectedCard.classList.add("update-card-active");
     }
 
+    function openMemoModal(update, trigger) {
+      memoModalTag.textContent = update.label || "";
+      memoModalTitle.textContent = update.title || "";
+      memoModalSummary.textContent = update.summary || "";
+      memoModalMedia.replaceChildren();
+
+      if (update.details) {
+        memoModalDetails.textContent = update.details;
+        memoModalDetails.hidden = false;
+      } else {
+        memoModalDetails.textContent = "";
+        memoModalDetails.hidden = true;
+      }
+
+      if (update.media && update.media.length > 0) {
+        update.media.forEach(function (item) {
+          memoModalMedia.appendChild(createMediaNode(item));
+        });
+        memoModalMedia.hidden = false;
+      } else {
+        memoModalMedia.hidden = true;
+      }
+
+      memoModal.hidden = false;
+      document.body.classList.add("modal-open");
+      lastMemoTrigger = trigger;
+      memoModalClose.focus();
+    }
+
+    function closeMemoModal() {
+      memoModal.hidden = true;
+      document.body.classList.remove("modal-open");
+      if (lastMemoTrigger) lastMemoTrigger.focus();
+    }
+
+    function findUpdateBySlug(slug) {
+      return lifeUpdates.find(function (update) {
+        return update.slug === slug;
+      });
+    }
+
     function renderPage() {
       const start = page * pageSize;
       const end = Math.min(start + pageSize, lifeUpdates.length);
@@ -181,6 +290,14 @@
       if (shouldScrollToTarget && targetSlug) {
         requestAnimationFrame(function () {
           scrollToUpdateCard(targetSlug);
+          if (shouldOpenTargetModal) {
+            const selectedCard = document.getElementById(targetSlug);
+            const selectedUpdate = findUpdateBySlug(targetSlug);
+            if (selectedCard && selectedUpdate) {
+              openMemoModal(selectedUpdate, selectedCard);
+            }
+            shouldOpenTargetModal = false;
+          }
         });
         shouldScrollToTarget = false;
       }
@@ -201,7 +318,14 @@
     updatesList.addEventListener("click", function (event) {
       const selectedCard = event.target.closest(".update-card");
       if (!selectedCard) return;
+
+      const selectedUpdate = lifeUpdates.find(function (update) {
+        return update.slug === selectedCard.dataset.updateSlug;
+      });
+
       activateUpdateCard(selectedCard.dataset.updateSlug, false);
+      shouldOpenTargetModal = false;
+      if (selectedUpdate) openMemoModal(selectedUpdate, selectedCard);
     });
 
     updatesList.addEventListener("keydown", function (event) {
@@ -210,8 +334,18 @@
 
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
+        const selectedUpdate = lifeUpdates.find(function (update) {
+          return update.slug === selectedCard.dataset.updateSlug;
+        });
         activateUpdateCard(selectedCard.dataset.updateSlug, false);
+        shouldOpenTargetModal = false;
+        if (selectedUpdate) openMemoModal(selectedUpdate, selectedCard);
       }
+    });
+
+    memoModalClose.addEventListener("click", closeMemoModal);
+    memoModal.addEventListener("click", function (event) {
+      if (event.target.dataset.closeMemoModal === "true") closeMemoModal();
     });
 
     window.addEventListener("hashchange", function () {
@@ -225,7 +359,12 @@
       targetSlug = nextSlug;
       page = Math.floor(nextIndex / pageSize);
       shouldScrollToTarget = true;
+      shouldOpenTargetModal = true;
       renderPage();
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !memoModal.hidden) closeMemoModal();
     });
 
     renderPage();

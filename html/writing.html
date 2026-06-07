@@ -14,7 +14,14 @@
 
 <nav>
   <a class="nav-logo" href="portfolio.html">Scroll</a>
-  <div class="nav-actions">
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav-links" aria-label="Toggle navigation">
+    <span class="nav-toggle-lines" aria-hidden="true">
+      <span class="nav-toggle-line"></span>
+      <span class="nav-toggle-line"></span>
+      <span class="nav-toggle-line"></span>
+    </span>
+  </button>
+  <div class="nav-actions" id="site-nav-links">
     <a class="clink small" href="portfolio.html">Home</a>
     <a class="clink small" href="about.html">About</a>
     <a class="clink small" href="work.html">Work</a>
@@ -45,7 +52,20 @@
   </div>
 </main>
 
+<div class="project-modal memo-modal" id="memo-modal" hidden>
+  <div class="project-modal-backdrop" data-close-memo-modal="true"></div>
+  <div class="project-modal-card" role="dialog" aria-modal="true" aria-labelledby="memo-modal-title">
+    <button class="project-modal-close" id="memo-modal-close" type="button" aria-label="Close memo popup">&times;</button>
+    <div class="project-modal-tag" id="memo-modal-tag"></div>
+    <h2 class="project-modal-title" id="memo-modal-title"></h2>
+    <p class="project-modal-summary" id="memo-modal-summary"></p>
+    <div class="project-modal-media" id="memo-modal-media" hidden></div>
+    <p class="project-modal-details" id="memo-modal-details" hidden></p>
+  </div>
+</div>
+
 <script src="../js/life-updates.js"></script>
+<script src="../js/nav.js"></script>
 
 <footer class="page-footer">
   <span>Current as of June 7, 2026</span>
