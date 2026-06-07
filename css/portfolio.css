@@ -832,24 +832,117 @@ body.modal-open{
 @media (max-width: 900px){
   nav,.hero-page,.section,.page-main,.page-footer{padding-left:1.5rem;padding-right:1.5rem}
   .home-grid,.about-grid,.skills-two-col{grid-template-columns:1fr}
+  .about-grid{gap:2.5rem}
   .hero-sub,.page-footer{flex-direction:column;align-items:flex-start}
   .about-figure{min-height:420px}
   .about-image{min-height:388px}
+  .project-item{gap:1.25rem}
   .updates-head,.updates-pagination{flex-direction:column;align-items:flex-start}
   .home-grid-note{justify-content:flex-start}
 }
 
 @media (max-width: 640px){
-  nav{align-items:flex-start}
-  .nav-actions{justify-content:flex-start}
-  .hero-page{padding-top:8.75rem}
-  .hero-actions,.page-links,.contact-links,.page-tail{gap:.75rem}
+  nav{
+    align-items:flex-start;
+    gap:.85rem;
+    padding-top:1rem;
+    padding-bottom:1rem;
+  }
+  .nav-actions{
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    justify-content:flex-start;
+    gap:.65rem;
+  }
+  .nav-actions .clink.small{
+    width:100%;
+    padding:.8rem .75rem;
+  }
+  .hero-page{
+    min-height:auto;
+    padding-top:12.25rem;
+    padding-bottom:3rem;
+  }
+  .page-main{
+    padding-top:11.5rem;
+    min-height:auto;
+  }
+  .hero-title{font-size:clamp(3.25rem,18vw,4.9rem)}
+  .hero-copy,.page-copy,.about-body,.proj-desc,.update-card-copy,.contact-sub{
+    letter-spacing:.04em;
+  }
+  .hero-sub{
+    gap:1.25rem;
+    align-items:flex-start;
+  }
+  .hero-actions,.page-links,.contact-links,.page-tail,.updates-pagination{
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:.75rem;
+  }
   .clink,.clink.small{width:100%;text-align:center}
-  .about-caption{left:1.5rem;right:1.5rem;bottom:1.25rem;letter-spacing:.16em}
-  .project-item{grid-template-columns:1fr;gap:1rem}
+  .feature-card,.update-card{padding:1.35rem}
+  .about-figure{
+    min-height:340px;
+    padding:.75rem;
+  }
+  .about-figure::before{inset:.95rem}
+  .about-image{min-height:308px}
+  .about-caption{
+    top:auto;
+    left:1.25rem;
+    right:1.25rem;
+    bottom:1.1rem;
+    letter-spacing:.16em;
+  }
+  .project-item{
+    grid-template-columns:1fr;
+    gap:1rem;
+    padding:1.75rem 0;
+  }
+  .proj-chips{gap:.5rem}
   .proj-arrow{display:none}
+  .writing-item{
+    flex-direction:column;
+    gap:.75rem;
+  }
   .project-modal{padding:1rem}
-  .project-modal-card{padding:1.6rem}
+  .project-modal-card{
+    max-height:calc(100svh - 2rem);
+    overflow-y:auto;
+    padding:1.6rem;
+  }
   .project-modal-title{padding-right:2rem}
   .project-modal-summary,.project-modal-details{font-size:.8rem}
+  .page-footer{
+    gap:.6rem;
+    font-size:.55rem;
+    line-height:1.6;
+  }
+}
+
+@media (max-width: 480px){
+  .nav-actions,.hero-actions,.page-links,.contact-links,.page-tail,.updates-pagination{
+    grid-template-columns:1fr;
+  }
+  .hero-page{padding-top:15rem}
+  .page-main{padding-top:14rem}
+  .clink,.clink.small{
+    padding:.78rem 1rem;
+    letter-spacing:.16em;
+  }
+  .feature-title,.update-card-title{line-height:1.08}
+  .page-footer{
+    align-items:center;
+    text-align:center;
+  }
+}
+
+@media (hover: none){
+  .contact-link::before,
+  .contact-link::after{
+    display:none;
+  }
 }
