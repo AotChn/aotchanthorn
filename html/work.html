@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work</title>
+<script src="../js/ga4.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/portfolio.css">
+</head>
+<body>
+
+<div class="hero-bg"></div>
+
+<nav>
+  <a class="nav-logo" href="portfolio.html">Browse</a>
+  <div class="nav-actions">
+    <a class="clink small" href="portfolio.html">Home</a>
+    <a class="clink small" href="about.html">About</a>
+    <a class="clink small active" href="work.html">Work</a>
+    <a class="clink small" href="writing.html">Memos</a>
+    <a class="clink small" href="contact.html">Contact</a>
+  </div>
+</nav>
+
+<main class="page-shell page-main">
+  <div class="page-head">
+    <div class="section-index">02</div>
+    <h1 class="page-title">Projects</h1>
+    <p class="page-copy">Few of my projects completed at work, school, and personal time.</p>
+  </div>
+
+  <div class="projects-list" data-projects-list></div>
+
+  <div class="page-tail">
+    <a class="clink" href="writing.html">Next: Memos</a>
+    <a class="clink" href="about.html">Back to About</a>
+  </div>
+</main>
+
+<div class="project-modal" id="project-modal" hidden>
+  <div class="project-modal-backdrop" data-close-modal="true"></div>
+  <div class="project-modal-card" role="dialog" aria-modal="true" aria-labelledby="project-modal-title">
+    <button class="project-modal-close" type="button" aria-label="Close project popup">&times;</button>
+    <div class="project-modal-tag" id="project-modal-tag"></div>
+    <h2 class="project-modal-title" id="project-modal-title"></h2>
+    <p class="project-modal-summary" id="project-modal-summary"></p>
+    <div class="project-modal-media" id="project-modal-media" hidden></div>
+    <p class="project-modal-details" id="project-modal-details"></p>
+    <div class="project-modal-stack" id="project-modal-stack"></div>
+  </div>
+</div>
+
+<footer class="page-footer">
+  <span>Current as of June 7, 2026</span>
+  <span>Sardine</span>
+</footer>
+
+<script src="../js/projects.js"></script>
+
+</body>
+</html>

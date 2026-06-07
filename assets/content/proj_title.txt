@@ -1,8 +1,0 @@
-Trading Backtester
-Custom Game Engine
-Guppy Ai Speech Trainer
-Evolution NEAT Simulator
-Voltorb Flip Machine Learning Solver
-Graphing Calculator
-Image PathFinder
-Chip Virtual Emulator

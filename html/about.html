@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About</title>
+<script src="../js/ga4.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/portfolio.css">
+</head>
+<body>
+
+<div class="hero-bg"></div>
+
+<nav>
+  <a class="nav-logo" href="portfolio.html">Eigen</a>
+  <div class="nav-actions">
+    <a class="clink small" href="portfolio.html">Home</a>
+    <a class="clink small active" href="about.html">About</a>
+    <a class="clink small" href="work.html">Work</a>
+    <a class="clink small" href="writing.html">Memos</a>
+    <a class="clink small" href="contact.html">Contact</a>
+  </div>
+</nav>
+
+<main class="page-shell page-main">
+  <div class="page-head">
+    <div class="section-index">01</div>
+    <h1 class="page-title">Me</h1>
+  </div>
+
+  <div class="about-grid">
+    <div>
+      <div class="about-body">
+        <p>Hi my name is Aot. I’m an applied math major from UC Berkeley. Right now i'm building robots, simulations and whatnot. This is my centralized collection where I will host life happenings, blogs, and downloads for my programs.</p>
+        <p> Feel free to look around my site. If you have any opportunities for me or you’d like to just reach out, my contact should be somewhere on the site.</p>
+        <p>A little more about me here are some of my interests: </p>
+      </div>
+      <div class="about-tags">
+        <span class="tag">Archery</span>
+        <span class="tag">Writing</span>
+        <span class="tag">Films</span>
+        <span class="tag">Game Dev</span>
+        <span class="tag">Climbing</span>
+        <span class="tag">Simulations</span>
+      </div>
+      <div class="page-tail">
+        <a class="clink" href="work.html">Next: Work</a>
+        <a class="clink" href="contact.html">Contact</a>
+      </div>
+    </div>
+    <figure class="about-figure">
+      <video
+        class="about-image"
+        autoplay
+        controls
+        loop
+        playsinline
+        aria-label="Placeholder video for the About section"
+        poster="https://placehold.co/720x920/141310/c8b89a?text=About+Video"
+      >
+        <source src="../assets/Eigen2.mp4" type="video/mp4">
+      </video>
+      <figcaption class="about-caption">
+        <span>Mementos</span>
+        <span></span>
+      </figcaption>
+    </figure>
+  </div>
+</main>
+
+<script>
+const aboutVideo = document.querySelector('.about-image');
+
+if (aboutVideo) {
+  aboutVideo.volume = 0.10;
+  const autoplayAttempt = aboutVideo.play();
+  if (autoplayAttempt && typeof autoplayAttempt.catch === 'function') {
+    autoplayAttempt.catch(function () {
+      // Browsers may block autoplay when audio is enabled.
+    });
+  }
+}
+</script>
+
+<footer class="page-footer">
+  <span>Current as of June 7, 2026</span>
+  <span>Chilean Seabass</span>
+</footer>
+
+</body>
+</html>
