@@ -41,6 +41,14 @@
     label: "Sep 2023 · Education",
     title: "Entering UC Berkeley",
     summary: "I like the campus very much, it is pretty. Though the food around here is not much to be desired.",
+    media: [
+      {
+        type: "image",
+        src: "https://brand.berkeley.edu/wp-content/uploads/2024/08/logo-variations-thumbnail-gold-blue-1.png",
+        alt: "Official UC Berkeley wordmark in California Gold on Berkeley Blue",
+        caption: "Official UC Berkeley wordmark."
+      }
+    ],
     pinned: false
     }
 
