@@ -40,23 +40,111 @@
       details:
         "",
       chips: ["C++", "SDL3", "NEAT"],
+      stack: "$%^",
+      media: []
+    },
+    {
+      tag: "",
+      title: "Guppy AI Speech Trainer",
+      displayTitleHtml: "Guppy <em>AI</em> Speech Trainer",
+      description:
+        "To be updated",
+      summary:
+        "",
+      details:
+        "",
+      chips: ["Whisper", "Flask"],
       stack: "",
       media: []
-    }
+    },
+    {
+      tag: "",
+      title: "Navify Map Pathfinder ",
+      displayTitleHtml: "Navify <em>Map</em> Pathfinder ",
+      description:
+        "To be updated",
+      summary:
+        "",
+      details:
+        "",
+      chips: ["C++", "Flask", "OpenCV"],
+      stack: "$%^",
+      media: []
+    },
+    {
+      tag: "",
+      title: "Chip8 Emulator",
+      displayTitleHtml: "Chip8 <em>Emulator</em>",
+      description:
+        "To be updated",
+      summary:
+        "",
+      details:
+        "",
+      chips: ["C++", "SFML"],
+      stack: "",
+      media: []
+    },
+    {
+      tag: "",
+      title: "SQL from Scratch",
+      displayTitleHtml: "<em>SQL</em> from scratch",
+      description:
+        "Built a primative terminal based SQL engine in c++ that supports basic select, insert, update, and delete statements with indexing and query optimization. Utilizes custom B+ tree, array implementation",
+      summary:
+        "",
+      details:
+        "",
+      chips: [],
+      stack: "$%^",
+      media: []
+    },
+    {
+      tag: "",
+      title: "Maze Mini Game",
+      displayTitleHtml: "Maze Mini <em>Game<em>",
+      description:
+        "Using Princetons Standard Java library, built a simple top down maze game with mini maps, sprite animation rendering, as well as raycasting and supports pseudo 3D first person view",
+      summary:
+        "",
+      details:
+        "",
+      chips: ["Java", "Princeton StdLib"],
+      stack: "$%^",
+      media: []
+    },
+    
+    {
+      tag: "",
+      title: "Graphing Calculator App",
+      displayTitleHtml: "Graphing Calculator",
+      description:
+        "Built fully functional graphing calculator with full interface and support for complex natural language text parsing and compound functions. Implemented custom expression parser and evaluator with support for variables, functions, and order of operations. Supports function saving and loading as well as graph plotting with custom windowing, scaling, zooming, and panning.",
+      summary:
+        "",
+      details:
+        "",
+      chips: ["C++", "SFML"],
+      stack: "$%^",
+      media: []
+    },
+
     // {
     //   tag: "",
     //   title: "",
     //   displayTitleHtml: "c <em>x</em> c",
     //   description:
-    //     "",
+    //     "To be updated",
     //   summary:
     //     "",
     //   details:
     //     "",
     //   chips: [],
-    //   stack: "",
+    //   stack: "$%^",
     //   media: []
     // }
+
+    //if "$%^" for stack then copy chip
   ];
 
   const projectsList = document.querySelector("[data-projects-list]");
@@ -137,12 +225,20 @@
     return frame;
   }
 
+  function getProjectStackText(project) {
+    if (project.stack === "$%^") {
+      return (project.chips || []).join(" · ");
+    }
+
+    return project.stack || "";
+  }
+
   function openProjectModal(project, trigger) {
     modalTitle.textContent = project.title || "";
     modalTag.textContent = project.tag || "";
     modalSummary.textContent = project.summary || "";
     modalDetails.textContent = project.details || "";
-    modalStack.textContent = project.stack || "";
+    modalStack.textContent = getProjectStackText(project);
     modalMedia.replaceChildren();
 
     if (project.media && project.media.length > 0) {
