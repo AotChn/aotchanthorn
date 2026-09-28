@@ -141,7 +141,8 @@
     tooltip.replaceChildren();
     if (kind === "node") {
       const selectedEdge = selection?.startsWith("edge:") ? edges.get(selection.slice(5)) : null;
-      if (selectedEdge && (selectedEdge.from === id || selectedEdge.to === id)) {
+      // Selected nodes and edge endpoints already have a persistent title.
+      if (selection === key || (selectedEdge && (selectedEdge.from === id || selectedEdge.to === id))) {
         tooltip.hidden = true;
         return;
       }
