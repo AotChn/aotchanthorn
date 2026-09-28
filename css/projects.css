@@ -42,6 +42,20 @@
 .project-mobile-label{display:none}
 .project-history-empty{padding:3rem 1rem;border-bottom:1px solid var(--line);text-align:center;color:var(--sand-dim);font-size:.85rem;line-height:1.7}
 .project-history-empty[hidden]{display:none}
+.work-transitioning{overflow:hidden}
+.work-transitioning>*{pointer-events:none}
+.work-transitioning nav,.work-transitioning .page-head,.work-transitioning .project-history-toolbar,
+.work-transitioning .project-table thead,.work-transitioning .page-tail,.work-transitioning .page-footer,
+.work-transitioning .project-history-empty,.work-transitioning .project-modal{animation:none;opacity:0;transition:opacity .28s ease}
+.work-transitioning .project-row{background:none;border-color:transparent}
+.work-transitioning .project-row td,.work-transitioning .project-table th,.work-transitioning .page-main{border-color:transparent}
+.work-transitioning .project-row td>*,.work-transitioning .project-history-graph{visibility:hidden}
+.project-collapse-overlay{position:fixed;inset:0;z-index:1000;overflow:hidden;pointer-events:none}
+.project-collapse-scene{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.project-collapse-text-layer{position:absolute;top:0;left:0;transform-origin:0 0;pointer-events:none}
+.project-collapse-text{position:absolute;transform-origin:50% 50%;will-change:transform,opacity}
+.project-collapse-core{filter:drop-shadow(0 0 10px var(--collapse-wave))}
+.project-collapse-ring{fill:none;stroke:var(--collapse-wave);stroke-width:2;filter:drop-shadow(0 0 8px var(--collapse-wave))}
 @media(max-width:1000px) and (min-width:701px){
   .project-history-graph{width:58px}
   .project-col-graph{width:58px}
