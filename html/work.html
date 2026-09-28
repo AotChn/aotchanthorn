@@ -7,6 +7,7 @@
 <script src="../js/ga4.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/portfolio.css">
+<link rel="stylesheet" href="../css/projects.css">
 <link rel="stylesheet" href="../css/page-transition.css">
 <script src="../js/page-reveal.js"></script>
 </head>
@@ -37,7 +38,44 @@
     <p class="page-copy">Few of my projects completed at work, school, and personal time.</p>
   </div>
 
-  <div class="projects-list" data-projects-list></div>
+  <section class="project-history" aria-label="Project history">
+    <div class="project-history-toolbar">
+      <label class="project-view-filter">
+        <span class="project-visually-hidden">Filter projects by type</span>
+        <select data-project-filter>
+          <option value="all">All projects</option>
+          <option value="work">Work</option>
+          <option value="personal">Personal</option>
+          <option value="school">School</option>
+        </select>
+      </label>
+      <span class="project-count" data-project-count role="status"></span>
+    </div>
+    <div class="project-history-table" data-project-history>
+      <svg class="project-history-graph" aria-hidden="true" focusable="false" data-project-history-graph></svg>
+      <table class="project-table">
+        <caption class="project-visually-hidden">Projects, their function, type, and last update. Select a project to view its details.</caption>
+        <colgroup>
+          <col class="project-col-graph">
+          <col class="project-col-type">
+          <col class="project-col-name">
+          <col class="project-col-function">
+          <col class="project-col-updated">
+        </colgroup>
+        <thead>
+          <tr>
+            <th scope="col"><span class="project-visually-hidden">Timeline</span></th>
+            <th scope="col">Type</th>
+            <th scope="col">Project</th>
+            <th scope="col">Function</th>
+            <th scope="col">Last updated</th>
+          </tr>
+        </thead>
+        <tbody data-projects-list></tbody>
+      </table>
+      <p class="project-history-empty" data-project-empty hidden>No projects match this type.</p>
+    </div>
+  </section>
 
   <div class="page-tail">
     <a class="clink" href="writing.html">Next: Memos</a>

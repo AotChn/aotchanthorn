@@ -1,9 +1,16 @@
 (function () {
-  // Add, remove, or reorder projects here. Each object powers both the list card and the popup.
+  // OWNER SETTINGS — add, remove, or reorder projects here.
+  // type: "work", "personal", or "school"; leave "" to show an em dash.
+  // lastUpdated: "YYYY-MM-DD"; leave "" until a real project date is available.
+  // function: short description in the history row. Full details stay in the popup.
+  // Timeline branches follow type; blank types stay on the main line.
   const projects = [
     {
       tag: "Locomotion · Robotics",
       title: "Robot Reinforcement Training",
+      type: "",
+      lastUpdated: "",
+      function: "Train robot policies from video demonstrations.",
       displayTitleHtml: "Robot <em>Reinforcement</em> Training",
       description:
         "Assembled an end-to-end video-to-robot learning pipeline (Video2Robot, PromptHMR, MJLab) to train policies from raw video demonstrations using imitation learning techniques",
@@ -18,6 +25,9 @@
     {
       tag: "Gradient Descent · Pokemon",
       title: "Voltorb Flip Machine Learning Solver",
+      type: "",
+      lastUpdated: "",
+      function: "Optimize Voltorb Flip moves under uncertainty.",
       displayTitleHtml: "Voltorb Flip <em>Machine Learning</em> Solver",
       description:
         "Constructed a probabilistic decision-making engine using stochastic gradient methods to optimize move selection under uncertainty in the Pokémon mini-game Voltorb Flip.",
@@ -32,6 +42,9 @@
     {
       tag: "Neuroevolution · Neural Networks",
       title: "Evolution N.E.A.T Simulator",
+      type: "",
+      lastUpdated: "",
+      function: "Evolve neural network structures and weights.",
       displayTitleHtml: "Evolution <em>N.E.A.T</em> Simulator",
       description:
         "Implemented NeuroEvolution of Augmenting Topologies (NEAT) from scratch, evolving neural network structure and weights without backpropagation",
@@ -46,6 +59,9 @@
     {
       tag: "",
       title: "Guppy AI Speech Trainer",
+      type: "",
+      lastUpdated: "",
+      function: "AI-assisted speech training.",
       displayTitleHtml: "Guppy <em>AI</em> Speech Trainer",
       description:
         "To be updated",
@@ -60,6 +76,9 @@
     {
       tag: "",
       title: "Navify Map Pathfinder ",
+      type: "",
+      lastUpdated: "",
+      function: "Find routes on a map.",
       displayTitleHtml: "Navify <em>Map</em> Pathfinder ",
       description:
         "To be updated",
@@ -74,6 +93,9 @@
     {
       tag: "",
       title: "Chip8 Emulator",
+      type: "",
+      lastUpdated: "",
+      function: "Emulate CHIP-8 programs.",
       displayTitleHtml: "Chip8 <em>Emulator</em>",
       description:
         "To be updated",
@@ -88,6 +110,9 @@
     {
       tag: "",
       title: "SQL from Scratch",
+      type: "",
+      lastUpdated: "",
+      function: "Run SQL queries in a custom C++ database engine.",
       displayTitleHtml: "<em>SQL</em> from scratch",
       description:
         "Built a primative terminal based SQL engine in c++ that supports basic select, insert, update, and delete statements with indexing and query optimization. Utilizes custom B+ tree, array implementation",
@@ -102,6 +127,9 @@
     {
       tag: "",
       title: "Maze Mini Game",
+      type: "",
+      lastUpdated: "",
+      function: "Explore a maze in 2D and first person.",
       displayTitleHtml: "Maze Mini <em>Game<em>",
       description:
         "Using Princetons Standard Java library, built a simple top down maze game with mini maps, sprite animation rendering, as well as raycasting and supports pseudo 3D first person view",
@@ -117,6 +145,9 @@
     {
       tag: "",
       title: "Graphing Calculator App",
+      type: "",
+      lastUpdated: "",
+      function: "Parse functions and plot interactive graphs.",
       displayTitleHtml: "Graphing Calculator",
       description:
         "Built fully functional graphing calculator with full interface and support for complex natural language text parsing and compound functions. Implemented custom expression parser and evaluator with support for variables, functions, and order of operations. Supports function saving and loading as well as graph plotting with custom windowing, scaling, zooming, and panning.",
@@ -148,6 +179,11 @@
   ];
 
   const projectsList = document.querySelector("[data-projects-list]");
+  const historyTable = document.querySelector("[data-project-history]");
+  const historyGraph = document.querySelector("[data-project-history-graph]");
+  const projectFilter = document.querySelector("[data-project-filter]");
+  const projectCount = document.querySelector("[data-project-count]");
+  const projectEmpty = document.querySelector("[data-project-empty]");
   const projectModal = document.getElementById("project-modal");
   const modalTitle = document.getElementById("project-modal-title");
   const modalTag = document.getElementById("project-modal-tag");
@@ -158,6 +194,8 @@
   const modalCloseButton = document.querySelector(".project-modal-close");
 
   let lastProjectTrigger = null;
+  const projectTypes = { work: "Work", personal: "Personal", school: "School" };
+  const dateFormatter = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
   function createElement(tagName, className, text) {
     const element = document.createElement(tagName);
@@ -167,37 +205,72 @@
   }
 
   function createProjectItem(project, index) {
-    const article = createElement("article", "project-item");
-    const number = createElement("span", "proj-num", String(index + 1).padStart(2, "0"));
-    const body = createElement("div", "proj-body");
-    const tag = createElement("div", "proj-tag", project.tag);
-    const title = createElement("div", "proj-title");
-    const description = createElement("div", "proj-desc", project.description);
-    const chips = createElement("div", "proj-chips");
-    const arrow = createElement("span", "proj-arrow", "→");
+    const row = createElement("tr", "project-row");
+    const type = Object.hasOwn(projectTypes, project.type) ? project.type : "unset";
+    row.dataset.projectIndex = String(index);
+    row.dataset.projectType = type;
 
-    article.tabIndex = 0;
-    article.setAttribute("role", "button");
-    article.setAttribute("aria-haspopup", "dialog");
-    article.setAttribute("aria-label", "Open project: " + project.title);
-    article.dataset.projectIndex = String(index);
+    const graph = createElement("td", "project-graph-cell");
+    const typeCell = createElement("td", "project-type-cell");
+    typeCell.append(createElement("span", "project-mobile-label", "Type"));
+    typeCell.append(createElement("span", type === "unset" ? "project-unset" : "project-type-badge", projectTypes[type] || "—"));
 
-    title.innerHTML = project.displayTitleHtml || project.title;
+    const nameCell = createElement("td", "project-name-cell");
+    const title = createElement("button", "project-title-button", project.title.trim());
+    title.type = "button";
+    title.setAttribute("aria-haspopup", "dialog");
+    title.setAttribute("aria-label", "Open project: " + project.title.trim());
+    nameCell.append(title);
 
-    project.chips.forEach(function (chipLabel) {
-      chips.appendChild(createElement("span", "chip", chipLabel));
+    const functionCell = createElement("td", "project-function-cell");
+    functionCell.append(createElement("span", "project-mobile-label", "Function"));
+    functionCell.append(createElement("p", "project-function-copy", project.function || project.description || "—"));
+
+    const updatedCell = createElement("td", "project-updated-cell");
+    updatedCell.append(createElement("span", "project-mobile-label", "Last updated"));
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(project.lastUpdated || "") ? new Date(project.lastUpdated + "T00:00:00Z") : null;
+    const validDate = date && !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === project.lastUpdated;
+    const updated = createElement(validDate ? "time" : "span", "project-updated", validDate ? dateFormatter.format(date) : "—");
+    if (validDate) updated.dateTime = project.lastUpdated;
+    updatedCell.append(updated);
+    row.append(graph, typeCell, nameCell, functionCell, updatedCell);
+    return row;
+  }
+
+  function drawHistoryGraph() {
+    if (!historyGraph || !historyTable) return;
+    historyGraph.replaceChildren();
+    const rows = [...projectsList.querySelectorAll(".project-row")];
+    if (!rows.length) return;
+    const bounds = historyTable.getBoundingClientRect();
+    const width = historyGraph.getBoundingClientRect().width;
+    historyGraph.setAttribute("viewBox", "0 0 " + width + " " + bounds.height);
+    const trunkX = width * .18;
+    const lanes = { unset: trunkX, work: width * .4, personal: width * .62, school: width * .84 };
+    const points = rows.map(row => {
+      const title = row.querySelector(".project-title-button").getBoundingClientRect();
+      return { type: row.dataset.projectType, y: title.top + title.height / 2 - bounds.top };
     });
-
-    body.appendChild(tag);
-    body.appendChild(title);
-    body.appendChild(description);
-    body.appendChild(chips);
-
-    article.appendChild(number);
-    article.appendChild(body);
-    article.appendChild(arrow);
-
-    return article;
+    function draw(tag, attributes) {
+      const shape = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      Object.entries(attributes).forEach(([key, value]) => shape.setAttribute(key, value));
+      historyGraph.append(shape);
+    }
+    const top = Math.max(0, points[0].y - 22), bottom = Math.min(bounds.height, points.at(-1).y + 22);
+    draw("path", { class: "project-history-trunk", d: `M${trunkX} ${top} V${bottom}` });
+    Object.keys(projectTypes).forEach(type => {
+      const branch = points.filter(point => point.type === type);
+      if (!branch.length) return;
+      const x = lanes[type], start = branch[0].y, end = branch.at(-1).y;
+      draw("path", {
+        class: "project-history-branch", "data-project-type": type,
+        d: `M${trunkX} ${start - 22} C${trunkX} ${start - 10} ${x} ${start - 12} ${x} ${start} V${end} C${x} ${end + 12} ${trunkX} ${end + 10} ${trunkX} ${end + 22}`
+      });
+    });
+    points.forEach(point => {
+      draw("circle", { class: "project-history-dot", "data-project-type": point.type, cx: lanes[point.type], cy: point.y, r: 4 });
+      draw("circle", { class: "project-history-dot-core", "data-project-type": point.type, cx: lanes[point.type], cy: point.y, r: 1.3 });
+    });
   }
 
   function createMediaNode(item) {
@@ -226,7 +299,7 @@
   }
 
   function getProjectStackText(project) {
-    if (project.stack === "$%^") {
+    if (project.stack === "$%^" || !project.stack) {
       return (project.chips || []).join(" · ");
     }
 
@@ -236,7 +309,7 @@
   function openProjectModal(project, trigger) {
     modalTitle.textContent = project.title || "";
     modalTag.textContent = project.tag || "";
-    modalSummary.textContent = project.summary || "";
+    modalSummary.textContent = project.summary || project.description || "";
     modalDetails.textContent = project.details || "";
     modalStack.textContent = getProjectStackText(project);
     modalMedia.replaceChildren();
@@ -268,32 +341,29 @@
     if (!projectsList) return;
 
     projectsList.replaceChildren();
+    let count = 0;
     projects.forEach(function (project, index) {
+      if (projectFilter && projectFilter.value !== "all" && project.type !== projectFilter.value) return;
       projectsList.appendChild(createProjectItem(project, index));
+      count++;
     });
+    if (projectCount) projectCount.textContent = count + (count === 1 ? " project" : " projects");
+    if (projectEmpty) projectEmpty.hidden = count !== 0;
+    drawHistoryGraph();
   }
 
   if (!projectsList || !projectModal || !modalCloseButton) return;
 
   renderProjects();
+  projectFilter?.addEventListener("change", renderProjects);
+  if ("ResizeObserver" in window) new ResizeObserver(drawHistoryGraph).observe(historyTable);
+  else window.addEventListener("resize", drawHistoryGraph);
+  document.fonts?.ready.then(drawHistoryGraph);
 
   projectsList.addEventListener("click", function (event) {
-    const projectTrigger = event.target.closest(".project-item");
-    if (!projectTrigger) return;
-
-    const projectIndex = Number(projectTrigger.dataset.projectIndex);
-    openProjectModal(projects[projectIndex], projectTrigger);
-  });
-
-  projectsList.addEventListener("keydown", function (event) {
-    const projectTrigger = event.target.closest(".project-item");
-    if (!projectTrigger) return;
-
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      const projectIndex = Number(projectTrigger.dataset.projectIndex);
-      openProjectModal(projects[projectIndex], projectTrigger);
-    }
+    const row = event.target.closest(".project-row");
+    if (!row) return;
+    openProjectModal(projects[Number(row.dataset.projectIndex)], row.querySelector(".project-title-button"));
   });
 
   modalCloseButton.addEventListener("click", closeProjectModal);
