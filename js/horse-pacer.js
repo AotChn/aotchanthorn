@@ -1,18 +1,21 @@
 (function () {
   "use strict";
 
-  // Owner controls: speeds are CSS pixels/second, durations are seconds,
-  // and fps is the sprite playback rate. The original four frames face left.
+  // Owner controls: speeds are CSS pixels/second, acceleration and braking
+  // are pixels/second², and pauses/look intervals are seconds.
   const settings = {
     frames: 4,
+    standingFrame: 3, // Zero-based: the fourth frame has its hooves planted.
     spriteFacing: -1,
     startPosition: .35,
-    turnChance: .3,
+    pauseDuration: [2.8, 5.8],
+    lookInterval: [.85, 1.35],
+    strideLength: 28,
+    sound: { enabled: true, volume: .2 },
     modes: [
-      { name: "rest", weight: .24, speed: [0, 0], duration: [.8, 2.5], fps: [0, 0] },
-      { name: "walk", weight: .36, speed: [28, 55], duration: [1.5, 4], fps: [5, 7] },
-      { name: "run", weight: .28, speed: [80, 135], duration: [.9, 2.8], fps: [9, 12] },
-      { name: "dash", weight: .12, speed: [180, 280], duration: [.45, 1.2], fps: [14, 18] }
+      { name: "walk", weight: .5, speed: [28, 52], acceleration: 65, braking: 110 },
+      { name: "run", weight: .36, speed: [80, 130], acceleration: 150, braking: 210 },
+      { name: "dash", weight: .14, speed: [175, 245], acceleration: 260, braking: 330 }
     ]
   };
   const random = (min, max) => min + Math.random() * (max - min);
@@ -21,68 +24,98 @@
   document.querySelectorAll("[data-horse-lane]").forEach(lane => {
     const sprite = lane.querySelector(".horse-sprite");
     if (!sprite) return;
-    let x = 0, limit = 0, measured = false, direction = 1;
-    let mode = settings.modes[0], speed = 0, targetSpeed = 0, fps = 0;
-    let remaining = random(.5, 1.2), frameProgress = 0, shownFrame = -1;
+    const sound = window.createHorseHoofSound?.(settings.sound);
+    let x = 0, destination = 0, limit = 0, measured = false, direction = 1;
+    let mode = null, speed = 0, cruiseSpeed = 0;
+    let restTime = random(...settings.pauseDuration), lookTime = random(...settings.lookInterval);
+    let phase = settings.standingFrame / settings.frames, shownFrame = -1;
     let frame = null, lastTime = null, inView = true, pageActive = true;
 
     function draw() {
       sprite.style.transform = `translate3d(${x.toFixed(2)}px,0,0) scaleX(${direction * settings.spriteFacing})`;
-      const index = Math.floor(frameProgress) % settings.frames;
+      const index = mode ? Math.floor(phase * settings.frames) % settings.frames : settings.standingFrame;
       if (index !== shownFrame) {
         sprite.style.backgroundPositionX = `${index * 100 / (settings.frames - 1)}%`;
         shownFrame = index;
       }
     }
 
+    function rest() {
+      mode = null;
+      speed = cruiseSpeed = 0;
+      destination = x;
+      phase = settings.standingFrame / settings.frames;
+      restTime = random(...settings.pauseDuration);
+      lookTime = random(...settings.lookInterval);
+      lane.dataset.horseState = "rest";
+    }
+
     function measure() {
       const fraction = measured && limit > 0 ? x / limit : settings.startPosition;
+      const destinationFraction = measured && limit > 0 ? destination / limit : fraction;
       limit = Math.max(0, lane.clientWidth - sprite.offsetWidth);
       x = limit * fraction;
+      destination = limit * destinationFraction;
       measured = true;
+      if (!limit || (mode && Math.abs(destination - x) < .25)) rest();
       draw();
       sync();
     }
 
-    function chooseMode() {
-      // A pause always leads back to movement, rather than repeated long rests.
-      const choices = settings.modes.filter(next => mode.name !== "rest" || next.name !== "rest");
-      let pick = Math.random() * choices.reduce((sum, next) => sum + next.weight, 0);
-      mode = choices.find(next => (pick -= next.weight) < 0) || choices.at(-1);
-      remaining = random(...mode.duration);
-      targetSpeed = random(...mode.speed);
-      if (targetSpeed > 0) {
-        fps = random(...mode.fps);
-        if (x <= 1) direction = 1;
-        else if (x >= limit - 1) direction = -1;
-        else if (Math.random() < settings.turnChance) direction *= -1;
-      }
+    function startTrip() {
+      const minimum = Math.min(limit, Math.max(40, limit * .28));
+      const canGoLeft = x >= minimum;
+      const canGoRight = limit - x >= minimum;
+      direction = canGoLeft && canGoRight ? (Math.random() < .5 ? -1 : 1) : (canGoRight ? 1 : -1);
+      const available = direction > 0 ? limit - x : x;
+      destination = x + direction * random(Math.min(minimum, available), available);
+      let pick = Math.random() * settings.modes.reduce((sum, next) => sum + next.weight, 0);
+      mode = settings.modes.find(next => (pick -= next.weight) < 0) || settings.modes.at(-1);
+      cruiseSpeed = random(...mode.speed);
       lane.dataset.horseState = mode.name;
+    }
+
+    function stride(distance, dt) {
+      // Advance by ground covered, so feet and hoofbeats slow down together.
+      const progress = distance / (settings.strideLength + speed * .22);
+      const end = phase + progress;
+      const contacts = speed < 65 ? [0, .25, .5, .75] : [.02, .18, .72, .86];
+      contacts.forEach((contact, index) => {
+        const next = Math.floor(phase - contact) + 1 + contact;
+        if (next <= end && speed > 5) {
+          sound?.hit(speed, [1, .65, .85, .6][index], (next - phase) / progress * dt);
+        }
+      });
+      phase = end % 1;
     }
 
     function tick(now) {
       frame = null;
       const dt = lastTime === null ? 0 : Math.min((now - lastTime) / 1000, .05);
       lastTime = now;
-      remaining -= dt;
-      if (remaining <= 0) chooseMode();
-      const acceleration = mode.name === "dash" ? 14 : 7;
-      speed += (targetSpeed - speed) * (1 - Math.exp(-acceleration * dt));
-      x += direction * speed * dt;
-      if (x < 0 || x > limit) {
-        x = Math.max(0, Math.min(limit, x));
-        direction = x === 0 ? 1 : -1;
-        // Some turns are immediate; others pause at the end of the pacing area.
-        speed = 0;
-        if (Math.random() < .45) {
-          mode = settings.modes[0];
-          targetSpeed = 0;
-          remaining = random(...mode.duration);
-          lane.dataset.horseState = mode.name;
+      if (!mode) {
+        restTime -= dt;
+        lookTime -= dt;
+        if (lookTime <= 0) {
+          direction *= -1;
+          lookTime = random(...settings.lookInterval);
+        }
+        if (restTime <= 0) startTrip();
+      } else {
+        const remaining = Math.abs(destination - x);
+        // Brake over the remaining distance instead of bouncing off the ends.
+        const desired = Math.min(cruiseSpeed, Math.sqrt(2 * mode.braking * remaining));
+        const previousSpeed = speed;
+        const change = (desired > speed ? mode.acceleration : mode.braking) * dt;
+        speed += Math.max(-change, Math.min(change, desired - speed));
+        const distance = Math.min(remaining, (previousSpeed + speed) * .5 * dt);
+        x = Math.max(0, Math.min(limit, x + direction * distance));
+        stride(distance, dt);
+        if (remaining - distance < .25) {
+          x = destination;
+          rest();
         }
       }
-      if (speed > 2) frameProgress += dt * fps * Math.min(1, speed / Math.max(targetSpeed, 28));
-      else frameProgress = 0;
       draw();
       frame = requestAnimationFrame(tick);
     }
@@ -92,15 +125,14 @@
       frame = lastTime = null;
       const motionAllowed = !reducedMotion.matches && window.AOT_ANIMATIONS?.enabled !== false;
       if (!motionAllowed) {
-        speed = 0;
-        frameProgress = 0;
+        if (mode) rest();
         draw();
       }
       const page = document.documentElement;
-      if (motionAllowed && pageActive && inView && !document.hidden && limit > 0 &&
-          !page.classList.contains("home-returning") && !page.classList.contains("page-wave-reveal")) {
-        frame = requestAnimationFrame(tick);
-      }
+      const running = motionAllowed && pageActive && inView && !document.hidden && limit > 0 &&
+        !page.classList.contains("home-returning") && !page.classList.contains("page-wave-reveal");
+      sound?.setActive(running);
+      if (running) frame = requestAnimationFrame(tick);
     }
 
     lane.dataset.horseState = "rest";
@@ -113,7 +145,6 @@
         sync();
       }).observe(lane);
     }
-    // Pause along with the existing star control and page transition effects.
     window.AOT_ANIMATIONS?.subscribe(sync);
     reducedMotion.addEventListener("change", sync);
     document.addEventListener("visibilitychange", sync);

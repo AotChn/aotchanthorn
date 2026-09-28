@@ -13,7 +13,7 @@
   bottom:0;
   width:var(--horse-size);
   height:var(--horse-size);
-  background:url("../assets/mini-horse-run.png") 0 0 / 400% 100% no-repeat;
+  background:url("../assets/mini-horse-run.png") 100% 0 / 400% 100% no-repeat;
   image-rendering:pixelated;
   transform-origin:center;
 }
