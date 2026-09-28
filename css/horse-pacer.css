@@ -1,0 +1,33 @@
+.horse-lane{
+  --horse-size:96px;
+  position:relative;
+  min-width:0;
+  height:var(--horse-size);
+  overflow:hidden;
+  pointer-events:none;
+  user-select:none;
+}
+.horse-sprite{
+  position:absolute;
+  left:0;
+  bottom:0;
+  width:var(--horse-size);
+  height:var(--horse-size);
+  background:url("../assets/mini-horse-run.png") 0 0 / 400% 100% no-repeat;
+  image-rendering:pixelated;
+  transform-origin:center;
+}
+.memos-horse-head{
+  display:grid;
+  grid-template-columns:minmax(0,2fr) minmax(0,3fr);
+  align-items:end;
+  gap:2rem;
+}
+.about-horse-tail{align-items:flex-end}
+.horse-lane--about{flex:1 1 200px}
+.horse-lane--contact{margin-top:clamp(4rem,12svh,8rem)}
+@media(max-width:800px){
+  .memos-horse-head{grid-template-columns:1fr;gap:.5rem}
+  .horse-lane--about{grid-column:1 / -1;width:100%}
+  .horse-lane--contact{margin-top:3rem}
+}
