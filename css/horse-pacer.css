@@ -26,6 +26,28 @@
 .about-horse-tail{align-items:flex-end}
 .horse-lane--about{flex:1 1 200px}
 .horse-lane--contact{margin-top:clamp(4rem,12svh,8rem)}
+.horse-exiting{scroll-behavior:auto}
+.horse-exiting [data-horse-lane] .horse-sprite{visibility:hidden}
+.horse-exit-overlay{
+  position:fixed;inset:0;z-index:1100;overflow:hidden;
+  touch-action:none;overscroll-behavior:none;
+}
+.horse-exit-stage{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none}
+.horse-exit-runner{transform-origin:center 90%;will-change:transform,left}
+.horse-exit-wall{
+  position:absolute;width:2px;background:var(--horse-wave-color);opacity:.6;
+  box-shadow:0 0 10px var(--horse-wave-color);
+}
+.horse-exit-wave{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.horse-exit-wave circle{
+  fill:none;stroke:var(--horse-wave-color);stroke-width:2;
+  filter:drop-shadow(0 0 8px var(--horse-wave-color));
+}
+.horse-impact-target{animation:horse-text-impact .24s ease-out both!important}
+@keyframes horse-text-impact{
+  from{color:var(--off);text-shadow:0 0 12px var(--sand)}
+  to{text-shadow:0 0 0 transparent}
+}
 @media(max-width:800px){
   .memos-horse-head{grid-template-columns:1fr;gap:.5rem}
   .horse-lane--about{grid-column:1 / -1;width:100%}

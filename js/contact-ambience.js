@@ -19,7 +19,8 @@
     const page = document.documentElement;
     return pageActive && !document.hidden &&
       !page.classList.contains("home-returning") &&
-      !page.classList.contains("page-wave-reveal");
+      !page.classList.contains("page-wave-reveal") &&
+      !page.classList.contains("horse-exiting");
   }
 
   function sync() {

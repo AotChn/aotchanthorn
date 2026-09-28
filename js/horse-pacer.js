@@ -131,7 +131,8 @@
       }
       const page = document.documentElement;
       const running = motionAllowed && pageActive && inView && !document.hidden && limit > 0 &&
-        !page.classList.contains("home-returning") && !page.classList.contains("page-wave-reveal");
+        !page.classList.contains("home-returning") && !page.classList.contains("page-wave-reveal") &&
+        !page.classList.contains("horse-exiting");
       sound?.setActive(running);
       if (running) frame = requestAnimationFrame(tick);
     }
