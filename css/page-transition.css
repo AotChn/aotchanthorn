@@ -1,0 +1,27 @@
+html.page-wave-reveal{background:#000}
+html.home-returning{background:#000}
+.home-returning body{visibility:hidden;pointer-events:none}
+.home-returning::after{display:none}
+.page-wave-reveal body{animation:page-wave-content var(--page-wave-duration) cubic-bezier(.22,.7,.2,1) both}
+.page-wave-reveal::after{
+  content:"";position:fixed;z-index:1000;pointer-events:none;
+  left:var(--page-wave-x);top:var(--page-wave-y);
+  width:var(--page-wave-diameter);height:var(--page-wave-diameter);
+  border:2px solid var(--page-wave-color);border-radius:50%;
+  background:var(--page-wave-fill);
+  box-shadow:0 0 24px var(--page-wave-color),inset 0 0 16px var(--page-wave-color);
+  animation:page-wave-ring var(--page-wave-duration) cubic-bezier(.22,.7,.2,1) both;
+}
+@keyframes page-wave-content{
+  from{clip-path:circle(0 at var(--page-wave-content-x) var(--page-wave-content-y))}
+  to{clip-path:circle(var(--page-wave-radius) at var(--page-wave-content-x) var(--page-wave-content-y))}
+}
+@keyframes page-wave-ring{
+  from{transform:translate(-50%,-50%) scale(0);opacity:.9}
+  60%{opacity:.5}
+  to{transform:translate(-50%,-50%) scale(1);opacity:0}
+}
+@media(prefers-reduced-motion:reduce){
+  .page-wave-reveal body{animation:none}
+  .page-wave-reveal::after{display:none}
+}

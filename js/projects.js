@@ -95,7 +95,7 @@
         "",
       details:
         "",
-      chips: [],
+      chips: ["C++", "B+ Tree", "Query Optimization"],
       stack: "$%^",
       media: []
     },

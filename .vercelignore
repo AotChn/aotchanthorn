@@ -1,0 +1,10 @@
+# Publish only the website and its deployment configuration.
+/*
+!index.html
+!html/
+!css/
+!js/
+!assets/
+!scripts/
+!vercel.json
+**/.DS_Store

@@ -7,10 +7,10 @@
 <script src="../js/ga4.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/portfolio.css">
+<link rel="stylesheet" href="../css/page-transition.css">
+<script src="../js/page-reveal.js"></script>
 </head>
 <body>
-
-<div class="hero-bg"></div>
 
 <nav>
   <a class="nav-logo" href="portfolio.html">Eigen</a>
@@ -30,49 +30,40 @@
   </div>
 </nav>
 
-<main class="page-shell page-main">
-  <div class="page-head">
-    <div class="section-index">01</div>
-    <h1 class="page-title">Me</h1>
-  </div>
+<main class="about-page" aria-label="About Aot">
+  <figure class="about-figure">
+    <video
+      class="about-image"
+      autoplay
+      controls
+      loop
+      playsinline
+      aria-label="Mementos"
+      poster="https://placehold.co/720x920/141310/c8b89a?text=About+Video"
+    >
+      <source src="../assets/Eigen2.mp4" type="video/mp4">
+    </video>
+    <figcaption class="about-caption">Mementos</figcaption>
+  </figure>
 
-  <div class="about-grid">
-    <div>
-      <div class="about-body">
-        <p>Hi my name is Aot. I’m an applied math major from UC Berkeley. Right now i'm building robots, simulations and whatnot. This is my centralized collection where I will host life happenings, blogs, and downloads for my programs.</p>
-        <p> Feel free to look around my site. If you have any opportunities for me or you’d like to just reach out, my contact should be somewhere on the site.</p>
-        <p>A little more about me here are some of my interests: </p>
-      </div>
-      <div class="about-tags">
-        <span class="tag">Archery</span>
-        <span class="tag">Writing</span>
-        <span class="tag">Films</span>
-        <span class="tag">Game Dev</span>
-        <span class="tag">Climbing</span>
-        <span class="tag">Simulations</span>
-      </div>
-      <div class="page-tail">
-        <a class="clink" href="work.html">Next: Work</a>
-        <a class="clink" href="contact.html">Contact</a>
-      </div>
+  <div class="about-content">
+    <div class="about-body">
+      <p>Hi my name is Aot. I’m an applied math major from UC Berkeley. Right now i'm building robots, simulations and whatnot. This is my centralized collection where I will host life happenings, blogs, and downloads for my programs.</p>
+      <p> Feel free to look around my site. If you have any opportunities for me or you’d like to just reach out, my contact should be somewhere on the site.</p>
+      <p>A little more about me here are some of my interests: </p>
     </div>
-    <figure class="about-figure">
-      <video
-        class="about-image"
-        autoplay
-        controls
-        loop
-        playsinline
-        aria-label="Placeholder video for the About section"
-        poster="https://placehold.co/720x920/141310/c8b89a?text=About+Video"
-      >
-        <source src="../assets/Eigen2.mp4" type="video/mp4">
-      </video>
-      <figcaption class="about-caption">
-        <span>Mementos</span>
-        <span></span>
-      </figcaption>
-    </figure>
+    <div class="about-tags">
+      <span class="tag">Archery</span>
+      <span class="tag">Writing</span>
+      <span class="tag">Films</span>
+      <span class="tag">Game Dev</span>
+      <span class="tag">Climbing</span>
+      <span class="tag">Simulations</span>
+    </div>
+    <div class="page-tail">
+      <a class="clink" href="work.html">Next: Work</a>
+      <a class="clink" href="contact.html">Contact</a>
+    </div>
   </div>
 </main>
 
@@ -90,6 +81,9 @@ if (aboutVideo) {
 }
 </script>
 <script src="../js/nav.js"></script>
+<script src="../js/system-graph-config.js"></script>
+<script src="../js/system-graph-transition-sound.js"></script>
+<script src="../js/home-return.js"></script>
 
 <footer class="page-footer">
   <span>Current as of June 7, 2026</span>

@@ -7,13 +7,16 @@
 <script src="../js/ga4.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/portfolio.css">
+<link rel="stylesheet" href="../css/system-graph.css">
+<script src="../js/system-graph-entrance.js"></script>
+<link rel="prefetch" href="about.html">
+<link rel="prefetch" href="work.html">
+<link rel="prefetch" href="writing.html">
+<link rel="prefetch" href="contact.html">
 </head>
-<body>
-
-<div class="hero-bg"></div>
+<body class="system-home">
 
 <nav>
-  <a class="nav-logo" href="portfolio.html">Main</a>
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav-links" aria-label="Toggle navigation">
     <span class="nav-toggle-lines" aria-hidden="true">
       <span class="nav-toggle-line"></span>
@@ -31,16 +34,25 @@
 </nav>
 
 <main class="page-shell hero-page">
-  <!-- <div class="hero-eyebrow">Reinforcement Learning Engineer</div> -->
-  <h1 class="hero-title">
-    Aot<br>
-    Chanthorn
-  </h1>
-  <p class="hero-copy">
-    Reinforcement Learning Engineer Intern @ Seres <br>
-    Applied Math @ UC Berkeley <br>
-    Reachable at aotchanthorn@gmail.com
-  </p>
+  <section class="system-graph" aria-labelledby="system-title" data-system-graph>
+    <header class="system-heading">
+      <h1 id="system-title" data-entrance-title>Aot V1-core Architecture</h1>
+    </header>
+    <div class="system-canvas" data-graph-canvas>
+      <svg class="system-svg" viewBox="0 0 1280 860" role="group" aria-labelledby="system-title" aria-describedby="system-svg-desc" data-graph-svg>
+        <desc id="system-svg-desc">Hover or focus a node to see its title. Select a node to animate and sound its incoming and outgoing connections, or select an edge to isolate that connection. Click empty space or press Escape to restore the silent full graph. Pulses move from each source to its destinations. Satisfaction is the final output.</desc>
+      </svg>
+      <div class="system-tooltip" role="tooltip" id="system-tooltip" hidden data-graph-tooltip></div>
+    </div>
+    <div class="system-note" data-node-note>
+      <p class="system-note-line" data-note-line hidden aria-hidden="true">
+        <span class="system-note-prefix">&gt;</span>
+        <span class="system-note-copy"><span data-note-text></span><span class="system-note-caret" data-note-caret hidden>▌</span></span>
+      </p>
+      <p class="system-sr-only" role="status" aria-live="polite" aria-atomic="true" data-note-announcement></p>
+    </div>
+    <noscript><p class="system-noscript">Enable JavaScript to explore the interactive system graph.</p></noscript>
+  </section>
 
   <div class="hero-sub">
     <div class="hero-actions">
@@ -60,6 +72,12 @@
 
 <script src="../js/life-updates.js"></script>
 <script src="../js/nav.js"></script>
+<script src="../js/system-graph-config.js"></script>
+<script src="../js/system-graph-hit-sound.js"></script>
+<script src="../js/system-graph-notes.js"></script>
+<script src="../js/system-graph-transition-sound.js"></script>
+<script src="../js/system-graph-transition.js"></script>
+<script src="../js/system-graph.js"></script>
 
 <footer class="page-footer">
   <span>Current as of June 7, 2026</span>
