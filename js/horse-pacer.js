@@ -11,7 +11,15 @@
     pauseDuration: [2.8, 5.8],
     lookInterval: [.85, 1.35],
     strideLength: 28,
-    sound: { enabled: true, volume: .12 },
+    sound: {
+      enabled: true,
+      src: "../assets/horse-galloping.mp3",
+      volume: .5,
+      // Loop between quiet gaps in the supplied recording (seconds).
+      loopStart: .45,
+      loopEnd: 7.6,
+      recordedStridesPerSecond: 2
+    },
     modes: [
       { name: "walk", weight: .5, speed: [28, 52], acceleration: 65, braking: 110 },
       { name: "run", weight: .36, speed: [80, 130], acceleration: 150, braking: 210 },
@@ -76,14 +84,9 @@
       lane.dataset.horseState = mode.name;
     }
 
-    function stride(distance, dt) {
-      // One soft note per stride, with rhythm driven by ground covered.
+    function stride(distance) {
       const progress = distance / (settings.strideLength + speed * .22);
-      const end = phase + progress;
-      if (end >= 1 && speed > 5) {
-        sound?.note(speed, limit > 0 ? x / limit : .5, (1 - phase) / progress * dt);
-      }
-      phase = end % 1;
+      phase = (phase + progress) % 1;
     }
 
     function tick(now) {
@@ -107,12 +110,13 @@
         speed += Math.max(-change, Math.min(change, desired - speed));
         const distance = Math.min(remaining, (previousSpeed + speed) * .5 * dt);
         x = Math.max(0, Math.min(limit, x + direction * distance));
-        stride(distance, dt);
+        stride(distance);
         if (remaining - distance < .25) {
           x = destination;
           rest();
         }
       }
+      sound?.update(speed, speed / (settings.strideLength + speed * .22));
       draw();
       frame = requestAnimationFrame(tick);
     }

@@ -2,104 +2,132 @@
   "use strict";
 
   window.createHorseMovementSound = function (settings) {
-    const volume = Math.max(0, Math.min(1, settings.volume ?? .12));
-    // A minor pentatonic palette keeps overlapping notes gentle and consonant.
-    const pitches = [220, 261.63, 293.66, 329.63, 392];
+    const volume = Math.max(0, Math.min(1, settings.volume ?? .5));
     const voices = new Set();
-    let audio = null, output = null, tones = [], active = false;
-    let lastNoteAt = -Infinity, previousPitch = null;
+    let audio = null, recording = null, loading = null, voice = null;
+    let active = false, speed = 0, stridesPerSecond = 0;
 
-    function release(voice) {
-      if (!voices.delete(voice)) return;
-      voice.source.disconnect();
-      voice.gain.disconnect();
+    function release(current) {
+      if (!voices.delete(current)) return;
+      current.source.disconnect();
+      current.gain.disconnect();
     }
 
-    function silence(fade = .04) {
-      voices.forEach(voice => {
+    function silence(fade = .12) {
+      voice = null;
+      voices.forEach(current => {
         try {
           if (!fade) {
-            voice.source.stop();
-            release(voice);
-          } else if (!voice.fading) {
-            voice.fading = true;
+            current.source.stop();
+            release(current);
+          } else if (!current.fading) {
+            current.fading = true;
             const now = audio.currentTime;
-            voice.gain.gain.setValueAtTime(voice.gain.gain.value, now);
-            voice.gain.gain.linearRampToValueAtTime(0, now + fade);
-            voice.source.stop(now + fade + .005);
+            const gain = current.gain.gain;
+            gain.cancelScheduledValues(now);
+            gain.setValueAtTime(gain.value, now);
+            gain.linearRampToValueAtTime(0, now + fade);
+            current.source.stop(now + fade + .005);
           }
-        } catch { release(voice); }
+        } catch { release(current); }
       });
-      lastNoteAt = -Infinity;
     }
 
     function close() {
+      active = false;
       silence(0);
+      loading?.controller.abort();
+      loading = null;
       if (audio && audio.state !== "closed") audio.close().catch(() => {});
-      audio = output = null;
-      tones = [];
+      audio = null;
     }
 
-    // Audio begins after a click, tap, or keyboard activation. The star control
-    // and visibility checks continue to pause both movement and its soundtrack.
+    function syncPlayback() {
+      if (!active || document.hidden || speed <= 3 || !audio || audio.state !== "running") {
+        silence();
+        return;
+      }
+      if (!recording) return;
+      try {
+        // Match the recording's gallop cadence to the sprite's actual strides.
+        const rate = Math.max(.4, Math.min(1.6, stridesPerSecond / (settings.recordedStridesPerSecond || 2)));
+        const level = volume * Math.min(1, speed / 24);
+        const now = audio.currentTime;
+        if (!voice) {
+          const source = audio.createBufferSource();
+          const gain = audio.createGain();
+          source.buffer = recording;
+          source.loop = true;
+          source.loopStart = Math.max(0, Math.min(settings.loopStart || 0, recording.duration - .01));
+          source.loopEnd = Math.max(source.loopStart + .01, Math.min(settings.loopEnd || recording.duration, recording.duration));
+          source.playbackRate.value = rate;
+          gain.gain.value = 0;
+          source.connect(gain);
+          gain.connect(audio.destination);
+          const current = { source, gain, fading: false };
+          voice = current;
+          voices.add(current);
+          source.onended = () => {
+            if (voice === current) voice = null;
+            release(current);
+          };
+          source.start(now, source.loopStart);
+        }
+        // Smooth changes while accelerating or braking, without restarting the clip.
+        if (voice.rate === undefined || Math.abs(voice.rate - rate) > .01) {
+          voice.source.playbackRate.setTargetAtTime(rate, now, .06);
+          voice.rate = rate;
+        }
+        if (voice.level === undefined || Math.abs(voice.level - level) > .005) {
+          voice.gain.gain.setTargetAtTime(level, now, .04);
+          voice.level = level;
+        }
+      } catch { silence(); }
+    }
+
+    function loadRecording(context) {
+      if (recording || loading) return;
+      const request = { controller: new AbortController() };
+      loading = request;
+      fetch(settings.src, { signal: request.controller.signal })
+        .then(response => {
+          if (!response.ok) throw new Error("Horse recording unavailable");
+          return response.arrayBuffer();
+        })
+        .then(bytes => context.decodeAudioData(bytes))
+        .then(buffer => {
+          // A completed request must not restart sound after leaving the page.
+          if (audio !== context || loading !== request) return;
+          recording = buffer;
+          syncPlayback();
+        })
+        .catch(() => {})
+        .finally(() => { if (loading === request) loading = null; });
+    }
+
+    // Browsers require a click, tap, or keyboard activation before audio plays.
     function unlock() {
       if (!active || document.hidden || settings.enabled === false || !volume) return;
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return;
       try {
-        if (!audio || audio.state === "closed") {
-          audio = new AudioContext();
-          output = audio.createGain();
-          output.gain.value = volume;
-          output.connect(audio.destination);
-          tones = pitches.map(frequency => {
-            const duration = .5;
-            const tone = audio.createBuffer(1, Math.ceil(audio.sampleRate * duration), audio.sampleRate);
-            const samples = tone.getChannelData(0);
-            for (let index = 0; index < samples.length; index++) {
-              const t = index / audio.sampleRate;
-              const attack = Math.sin(Math.min(1, t / .035) * Math.PI / 2) ** 2;
-              const tail = Math.min(1, (duration - t) / .06);
-              const envelope = attack * Math.exp(-Math.max(0, t - .035) * 7) * tail * tail;
-              // Rounded sine tones with a faint octave, without an impact/noise layer.
-              samples[index] = envelope * (
-                .82 * Math.sin(2 * Math.PI * frequency * t)
-                + .1 * Math.sin(4 * Math.PI * frequency * t) * Math.exp(-t * 8)
-              );
-            }
-            return tone;
-          });
-        }
-        if (audio.state === "suspended") audio.resume().catch(() => {});
+        if (!audio || audio.state === "closed") audio = new AudioContext();
+        loadRecording(audio);
+        if (audio.state === "suspended") audio.resume().then(syncPlayback).catch(() => {});
+        else syncPlayback();
       } catch { close(); }
     }
 
-    function note(speed, position, delay = 0) {
-      if (!active || document.hidden || !audio || audio.state !== "running" || !tones.length) return;
-      const at = audio.currentTime + Math.max(0, Math.min(.05, delay));
-      // Even a dash stays sparse: at most one soft note per quarter second.
-      if (at - lastNoteAt < .24) return;
-      try {
-        const target = Math.round(Math.max(0, Math.min(1, position)) * (pitches.length - 1));
-        previousPitch = previousPitch === null ? target
-          : previousPitch + Math.sign(target - previousPitch);
-        const source = audio.createBufferSource();
-        const gain = audio.createGain();
-        source.buffer = tones[previousPitch];
-        gain.gain.value = .45 + Math.min(1, speed / 245) * .15;
-        source.connect(gain);
-        gain.connect(output);
-        const voice = { source, gain, fading: false };
-        voices.add(voice);
-        source.onended = () => release(voice);
-        source.start(at);
-        lastNoteAt = at;
-      } catch { silence(); }
+    function update(nextSpeed, cadence) {
+      speed = Math.max(0, nextSpeed);
+      stridesPerSecond = Math.max(0, cadence);
+      syncPlayback();
     }
 
     function setActive(value) {
       active = value;
-      if (!active) silence();
+      if (!active) silence(.04);
+      else syncPlayback();
     }
 
     document.addEventListener("click", unlock);
@@ -107,6 +135,6 @@
       if (!event.repeat && (event.key === "Enter" || event.key === " ")) unlock();
     });
     window.addEventListener("pagehide", close);
-    return { note, setActive, rest() { silence(.12); } };
+    return { update, setActive, rest() { speed = stridesPerSecond = 0; silence(); } };
   };
 })();
