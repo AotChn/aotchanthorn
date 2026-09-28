@@ -44,7 +44,7 @@
 .project-type-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.32rem .5rem;border:1px solid var(--line);font-size:.65rem;line-height:1.4;color:var(--project-type-color);white-space:nowrap}
 .project-type-badge::before{content:"";width:4px;height:4px;border-radius:50%;background:currentColor}
 .project-unset{font-size:.8rem;color:var(--sand-dim)}
-.project-title-button{display:block;width:100%;padding:.35rem 0;min-height:44px;border:0;background:none;text-align:left;font:400 clamp(1.2rem,1.8vw,1.5rem)/1.15 var(--serif);color:var(--off);cursor:pointer;transition:color .2s;overflow-wrap:anywhere}
+.project-title-button{display:block;width:100%;padding:.35rem 0;min-height:44px;border:0;background:none;text-align:left;font:400 clamp(1.2rem,1.8vw,1.5rem)/1.15 var(--serif);color:var(--off);text-decoration:none;cursor:pointer;transition:color .2s;overflow-wrap:anywhere}
 .project-title-button:hover,.project-row:focus-within .project-title-button{color:var(--sand)}
 .project-title-button:focus-visible{outline:1px solid var(--sand);outline-offset:5px}
 .project-function-copy{font-size:.8rem;line-height:1.7;letter-spacing:.02em;color:#a89c8a;overflow-wrap:anywhere}
