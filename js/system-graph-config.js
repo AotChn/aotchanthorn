@@ -10,6 +10,7 @@
 //   phase       = seconds before the first output (0 or greater)
 //   hitPitch    = optional mechanical hit pitch in Hz; omit for an automatic pitch
 //   x, y        = position on the 1280 × 860 canvas
+//                 Portrait phones automatically swap the axes of nodes and bends.
 //
 // EDGES
 //   label       = hover title; leave "" for no title

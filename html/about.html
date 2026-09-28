@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>About</title>
 <script src="../js/ga4.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
@@ -34,12 +34,12 @@
   <figure class="about-figure">
     <video
       class="about-image"
-      autoplay
+      preload="metadata"
       controls
       loop
       playsinline
       aria-label="Mementos"
-      poster="https://placehold.co/720x920/141310/c8b89a?text=About+Video"
+      poster="../assets/about-poster.jpg"
     >
       <source src="../assets/Eigen2.mp4" type="video/mp4">
     </video>
@@ -72,10 +72,12 @@ const aboutVideo = document.querySelector('.about-image');
 
 if (aboutVideo) {
   aboutVideo.volume = 0.10;
-  const autoplayAttempt = aboutVideo.play();
-  if (autoplayAttempt && typeof autoplayAttempt.catch === 'function') {
-    autoplayAttempt.catch(function () {
-      // Browsers may block autoplay when audio is enabled.
+  // Leave playback to a tap on phones, reduced-motion, or data-saving devices.
+  const manualPlayback = window.matchMedia('(pointer: coarse), (max-width: 800px), (prefers-reduced-motion: reduce)').matches || navigator.connection?.saveData;
+  if (!manualPlayback) {
+    aboutVideo.autoplay = true;
+    aboutVideo.play()?.catch(function () {
+      // Native controls remain available when the browser blocks autoplay.
     });
   }
 }

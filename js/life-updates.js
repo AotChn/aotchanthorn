@@ -265,15 +265,17 @@
       }
 
       memoModal.hidden = false;
+      memoModal.querySelector(".project-modal-card").scrollTop = 0;
       document.body.classList.add("modal-open");
       lastMemoTrigger = trigger;
-      memoModalClose.focus();
+      memoModalClose.focus({ preventScroll: true });
     }
 
     function closeMemoModal() {
+      memoModal.querySelectorAll("video").forEach(video => video.pause());
       memoModal.hidden = true;
       document.body.classList.remove("modal-open");
-      if (lastMemoTrigger) lastMemoTrigger.focus();
+      if (lastMemoTrigger) lastMemoTrigger.focus({ preventScroll: true });
     }
 
     function findUpdateBySlug(slug) {

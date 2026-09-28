@@ -251,15 +251,17 @@
     }
 
     projectModal.hidden = false;
+    projectModal.querySelector(".project-modal-card").scrollTop = 0;
     document.body.classList.add("modal-open");
     lastProjectTrigger = trigger;
-    modalCloseButton.focus();
+    modalCloseButton.focus({ preventScroll: true });
   }
 
   function closeProjectModal() {
+    projectModal.querySelectorAll("video").forEach(video => video.pause());
     projectModal.hidden = true;
     document.body.classList.remove("modal-open");
-    if (lastProjectTrigger) lastProjectTrigger.focus();
+    if (lastProjectTrigger) lastProjectTrigger.focus({ preventScroll: true });
   }
 
   function renderProjects() {

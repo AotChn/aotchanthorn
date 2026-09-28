@@ -8,11 +8,13 @@
   function closeNav() {
     nav.classList.remove("nav-open");
     toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-label", "Open navigation");
   }
 
   function openNav() {
     nav.classList.add("nav-open");
     toggle.setAttribute("aria-expanded", "true");
+    toggle.setAttribute("aria-label", "Close navigation");
   }
 
   toggle.addEventListener("click", function () {
@@ -29,10 +31,20 @@
   });
 
   document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") closeNav();
+    if (event.key === "Escape" && nav.classList.contains("nav-open")) {
+      closeNav();
+      toggle.focus();
+    }
+  });
+
+  document.addEventListener("pointerdown", function (event) {
+    if (!nav.contains(event.target)) closeNav();
+  });
+  nav.addEventListener("focusout", function (event) {
+    if (!nav.contains(event.relatedTarget)) closeNav();
   });
 
   window.addEventListener("resize", function () {
-    if (window.innerWidth > 640) closeNav();
+    if (window.innerWidth > 800) closeNav();
   });
 })();

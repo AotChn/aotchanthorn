@@ -4,7 +4,15 @@
   const root = document.querySelector("[data-system-graph]");
   if (!root || !window.AOT_SYSTEM_GRAPH) return;
 
-  const config = window.AOT_SYSTEM_GRAPH;
+  const sourceConfig = window.AOT_SYSTEM_GRAPH;
+  // Keep owner coordinates untouched; portrait uses the same routes transposed.
+  const config = {
+    ...sourceConfig,
+    nodes: sourceConfig.nodes.map(node => ({ ...node })),
+    edges: sourceConfig.edges.map(edge => ({ ...edge }))
+  };
+  const portrait = window.matchMedia("(max-width: 640px) and (orientation: portrait)");
+  const touchInput = window.matchMedia("(pointer: coarse)");
   const svgNS = "http://www.w3.org/2000/svg";
   const svg = root.querySelector("[data-graph-svg]");
   const canvas = root.querySelector("[data-graph-canvas]");
@@ -27,6 +35,55 @@
   let elapsed = 0;
   let transitioning = false;
   let entering = false;
+  let entrance = null;
+
+  function layoutGraph() {
+    const project = (x, y) => portrait.matches ? [y, x] : [x, y];
+    config.nodes.forEach((node, index) => {
+      const source = sourceConfig.nodes[index];
+      [node.x, node.y] = project(source.x, source.y);
+    });
+    config.edges.forEach((edge, index) => {
+      edge.via = sourceConfig.edges[index].via.map(([x, y]) => project(x, y));
+    });
+    svg.setAttribute("viewBox", portrait.matches ? "-20 -35 900 1350" : "0 0 1280 860");
+    root.classList.toggle("is-portrait", portrait.matches);
+    nodeViews.forEach((view, id) => {
+      const node = nodes.get(id);
+      view.group.setAttribute("transform", "translate(" + node.x + " " + node.y + ")");
+      positionLabel(view.label, node);
+    });
+    edgeViews.forEach((view, id) => {
+      const { path, duration } = edgeGeometry(edges.get(id));
+      [view.base, view.flow, view.hit, ...view.pulses.map(pulse => pulse.element)]
+        .forEach(element => element.setAttribute("d", path));
+      view.duration = duration;
+    });
+  }
+
+  function positionLabel(label, node) {
+    const width = portrait.matches ? 860 : 1280;
+    label.setAttribute("y", portrait.matches ? (node.y < 80 ? "56" : "-42") : node.y < 45 ? "48" : "-30");
+    const left = portrait.matches ? width * 0.25 : 100;
+    const right = portrait.matches ? width * 0.75 : 1180;
+    label.setAttribute("text-anchor", node.x < left ? "start" : node.x > right ? "end" : "middle");
+  }
+
+  function edgeGeometry(edge) {
+    const source = nodes.get(edge.from), target = nodes.get(edge.to);
+    const points = [[source.x, source.y], ...edge.via, [target.x, target.y]];
+    const path = points.map((point, index) => (index ? "L" : "M") + point.join(" ")).join(" ");
+    const length = points.slice(1).reduce((sum, point, index) => sum + Math.hypot(point[0] - points[index][0], point[1] - points[index][1]), 0);
+    return { path, duration: Math.max(1.1, length / config.flowSpeed) };
+  }
+
+  function sizeLabels() {
+    const scale = svg.getScreenCTM()?.a;
+    const minimum = portrait.matches || touchInput.matches ? 14 : 0;
+    if (scale > 0) root.style.setProperty("--graph-node-label-size", Math.max(24, minimum / scale) + "px");
+  }
+
+  layoutGraph();
 
   function element(tag, attributes, text) {
     const el = document.createElement(tag);
@@ -172,8 +229,19 @@
     tooltip.style.top = Math.max(8, Math.min(top, canvas.clientHeight - height - 8)) + "px";
   }
 
+  function explore(group, key, anchor) {
+    if (transitioning || entering) return;
+    isolateComponent(selection === key ? null : key);
+    // Drawing an edge last moves it in the DOM, so restore focus afterwards.
+    group.focus({ preventScroll: true });
+    if (selection !== null) hitSound?.unlock();
+    showTooltip(key, anchor);
+    highlight();
+  }
+
   function bindComponent(group, key, anchor) {
-    group.addEventListener("pointerenter", () => {
+    group.addEventListener("pointerenter", event => {
+      if (event.pointerType === "touch") return;
       hovered = key;
       showTooltip(key, anchor);
       highlight();
@@ -193,20 +261,11 @@
       tooltip.hidden = true;
       highlight();
     });
-    function explore() {
-      if (transitioning || entering) return;
-      isolateComponent(selection === key ? null : key);
-      // Drawing an edge last moves it in the DOM, so restore focus afterwards.
-      group.focus({ preventScroll: true });
-      if (selection !== null) hitSound?.unlock();
-      showTooltip(key, anchor);
-      highlight();
-    }
-    group.addEventListener("click", explore);
+    group.addEventListener("click", () => explore(group, key, anchor));
     group.addEventListener("keydown", event => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        explore();
+        explore(group, key, anchor);
       }
     });
   }
@@ -219,9 +278,7 @@
     const source = nodes.get(edge.from);
     const target = nodes.get(edge.to);
     outgoing.get(edge.from).push(id);
-    const points = [[source.x, source.y], ...edge.via, [target.x, target.y]];
-    const path = points.map((point, index) => (index ? "L" : "M") + point.join(" ")).join(" ");
-    const length = points.slice(1).reduce((sum, point, index) => sum + Math.hypot(point[0] - points[index][0], point[1] - points[index][1]), 0);
+    const { path, duration } = edgeGeometry(edge);
     const group = svgElement("g", {
       class: "system-edge", "data-edge-id": id, "data-from": edge.from, "data-to": edge.to,
       tabindex: "0", role: "button", "aria-label": source.label + " to " + target.label + ": isolate connection", "aria-pressed": "false"
@@ -231,7 +288,7 @@
     const hit = svgElement("path", { class: "system-edge-hit", d: path });
     group.append(base, flow, hit);
     edgeLayer.append(group);
-    edgeViews.set(id, { group, base, flow, hit, duration: Math.max(1.1, length / config.flowSpeed), pulses: [] });
+    edgeViews.set(id, { group, base, flow, hit, duration, pulses: [] });
     bindComponent(group, "edge:" + id, hit);
   });
 
@@ -245,16 +302,35 @@
     const focus = svgElement("circle", { class: "system-node-focus", r: "19" });
     const body = svgElement("circle", { class: "system-node-body", r: "13" });
     const label = svgElement("text", {
-      class: "system-node-label", y: node.y < 45 ? "48" : "-30",
-      "text-anchor": node.x < 100 ? "start" : node.x > 1180 ? "end" : "middle",
+      class: "system-node-label",
       "aria-hidden": "true"
     });
     label.textContent = node.label;
+    positionLabel(label, node);
     group.append(hit, ring, focus, body, label);
     nodeLayer.append(group);
-    nodeViews.set(id, { group, ring, body, lastPulse: -10, nextOutput: node.phase });
+    nodeViews.set(id, { group, ring, body, label, lastPulse: -10, nextOutput: node.phase });
     bindComponent(group, "node:" + id, body);
   });
+
+  // Resolve overlapping touch targets by distance, not SVG paint order. Native
+  // scrolling and pinch zoom still cancel the click normally.
+  svg.addEventListener("click", event => {
+    if (event.detail === 0 || (!touchInput.matches && event.pointerType !== "touch")) return;
+    const matrix = svg.getScreenCTM();
+    if (!matrix) return;
+    let nearest = null, distance = 24;
+    nodes.forEach(node => {
+      const x = matrix.a * node.x + matrix.c * node.y + matrix.e;
+      const y = matrix.b * node.x + matrix.d * node.y + matrix.f;
+      const candidate = Math.hypot(event.clientX - x, event.clientY - y);
+      if (candidate < distance) { nearest = node; distance = candidate; }
+    });
+    if (!nearest) return;
+    event.stopPropagation();
+    const view = nodeViews.get(nearest.id);
+    explore(view.group, "node:" + nearest.id, view.body);
+  }, true);
 
   document.addEventListener("click", event => {
     if (transitioning || selection === null) return;
@@ -271,6 +347,14 @@
   });
   canvas.addEventListener("scroll", () => { tooltip.hidden = true; }, { passive: true });
   window.addEventListener("resize", () => { tooltip.hidden = true; });
+  portrait.addEventListener("change", () => {
+    entrance?.finish();
+    layoutGraph();
+    sizeLabels();
+  });
+  if ("ResizeObserver" in window) new ResizeObserver(sizeLabels).observe(svg);
+  else window.addEventListener("resize", sizeLabels);
+  sizeLabels();
 
   // One clock drives all emissions. Only explicit outgoing edges carry output;
   // arrivals never recursively re-emit, so feedback cycles stay bounded.
@@ -286,6 +370,11 @@
 
   function tick(now) {
     frame = null;
+    // Avoid rendering 60–120 times per second on a battery-powered touch device.
+    if (touchInput.matches && lastTime !== null && now - lastTime < 1000 / 30) {
+      frame = requestAnimationFrame(tick);
+      return;
+    }
     if (lastTime !== null) elapsed += Math.min((now - lastTime) / 1000, 0.1);
     lastTime = now;
     nodeViews.forEach((view, id) => {
@@ -298,8 +387,10 @@
         });
       }
       const age = elapsed - view.lastPulse;
-      view.ring.setAttribute("r", String(14 + Math.min(age, 1) * 13));
-      view.ring.style.opacity = age < 1 ? String((1 - age) * 0.85) : "0";
+      if (age < 1) {
+        view.ring.setAttribute("r", String(14 + age * 13));
+        view.ring.style.opacity = String((1 - age) * 0.85);
+      } else if (view.ring.style.opacity !== "0") view.ring.style.opacity = "0";
     });
     edgeViews.forEach((view, id) => {
       view.pulses = view.pulses.filter(pulse => {
@@ -348,7 +439,7 @@
   }
 
   refreshColors();
-  const entrance = window.createSystemGraphEntrance?.(root, config, {
+  entrance = window.createSystemGraphEntrance?.(root, config, {
     onStart() {
       entering = true;
       clearIsolation();

@@ -138,9 +138,12 @@
     }
 
     function start(url, page) {
-      const sink = page.sink;
+      // Freeze the outgoing layout so a phone rotation cannot move its sink
+      // halfway through the collapse while the underlying graph reflows.
+      const sink = { ...page.sink };
       const initial = svg.getScreenCTM();
-      const viewBox = svg.viewBox.baseVal;
+      const { x: boxX, y: boxY, width: boxWidth, height: boxHeight } = svg.viewBox.baseVal;
+      const viewBox = { x: boxX, y: boxY, width: boxWidth, height: boxHeight };
       if (!initial) { window.location.assign(url.href); return; }
       const geometry = collapseRoutes(config, sink);
       active = true;

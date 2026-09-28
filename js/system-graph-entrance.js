@@ -25,9 +25,9 @@
     const edgeStagger = setting("edgeStagger", 20, 0, 200);
     const titleFadeDuration = setting("titleFadeDuration", 1800, 100);
     const nodes = [...config.nodes].sort((a, b) => a.y - b.y || a.x - b.x).map(node => ({
-      ...node, group: root.querySelector('[data-node-id="' + node.id + '"]')
+      node, group: root.querySelector('[data-node-id="' + node.id + '"]')
     })).filter(node => node.group);
-    const order = new Map(nodes.map((node, index) => [node.id, index]));
+    const order = new Map(nodes.map(({ node }, index) => [node.id, index]));
     const edges = [...root.querySelectorAll(".system-edge")].sort((a, b) =>
       order.get(a.getAttribute("data-from")) - order.get(b.getAttribute("data-from"))
     ).map(group => ({ group, path: group.querySelector(".system-edge-idle") }));
@@ -51,9 +51,9 @@
       active = false;
       stopClock();
       title.style.removeProperty("opacity");
-      nodes.forEach(node => {
-        node.group.setAttribute("transform", "translate(" + node.x + " " + node.y + ")");
-        node.group.style.removeProperty("opacity");
+      nodes.forEach(({ node, group }) => {
+        group.setAttribute("transform", "translate(" + node.x + " " + node.y + ")");
+        group.style.removeProperty("opacity");
       });
       edges.forEach(({ group, path }) => {
         group.style.removeProperty("opacity");
@@ -75,12 +75,12 @@
       if (!active || document.hidden) return;
       if (lastTime !== null) elapsed += Math.min(100, now - lastTime);
       lastTime = now;
-      nodes.forEach((node, index) => {
+      nodes.forEach(({ node, group }, index) => {
         const t = clamp((elapsed - blankDuration - index * nodeStagger) / dropDuration);
         // A small overshoot gives the drops weight without moving their endpoints.
         const drop = 1 + 2.3 * Math.pow(t - 1, 3) + 1.3 * Math.pow(t - 1, 2);
-        node.group.setAttribute("transform", "translate(" + node.x + " " + (node.y - dropDistance * (1 - drop)) + ")");
-        node.group.style.opacity = String(clamp(t * 5));
+        group.setAttribute("transform", "translate(" + node.x + " " + (node.y - dropDistance * (1 - drop)) + ")");
+        group.style.opacity = String(clamp(t * 5));
       });
       edges.forEach(({ group, path }, index) => {
         const t = clamp((elapsed - edgesStart - index * edgeStagger) / edgeDuration);
