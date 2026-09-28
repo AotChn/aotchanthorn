@@ -10,7 +10,10 @@
   // use pageTransition in system-graph-config.js, just like the home graph.
   const textDuration = 900;
   const rowStagger = 35;
-  const convergeDuration = 1100;
+  const leadDuration = 760;
+  const followerDuration = 980;
+  const followerDelay = 180;
+  const followerStagger = 65;
   const duration = (value, fallback) => Number.isFinite(value) ? Math.max(100, Math.min(6000, value)) : fallback;
   const settleDuration = duration(settings.settleDuration, 180);
   const waveDuration = duration(settings.waveDuration, 900);
@@ -24,7 +27,13 @@
   ].map(([href, label]) => ({ url: new URL(href, document.baseURI), label }));
   const clamp = value => Math.max(0, Math.min(1, value));
   const ease = value => value * value * (3 - 2 * value);
-  const mix = (from, to, progress) => from + (to - from) * progress;
+  function curvePoint(start, first, second, end, progress) {
+    const remaining = 1 - progress;
+    const coordinate = axis => remaining ** 3 * start[axis]
+      + 3 * remaining ** 2 * progress * first[axis]
+      + 3 * remaining * progress ** 2 * second[axis] + progress ** 3 * end[axis];
+    return { x: coordinate("x"), y: coordinate("y") };
+  }
   const svgNS = "http://www.w3.org/2000/svg";
   let destination = null, navigating = false, overlay = null;
   let frame = null, watchdog = null, inertStates = [];
@@ -79,6 +88,18 @@
       return { row, x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2,
         radius: Math.max(2, bounds.width / 2), color: getComputedStyle(dot).stroke };
     }).filter(Boolean);
+    // With an empty filter there is no real node to lead the transition.
+    if (!nodes.length) { navigate(); return; }
+    const lead = nodes[0];
+    nodes.forEach((node, index) => {
+      node.delay = index ? followerDelay + Math.min(index - 1, 8) * followerStagger : 0;
+      node.duration = index ? followerDuration : leadDuration;
+      node.first = index
+        ? { x: Math.max(12, node.x - width * .12), y: node.y - Math.max(height * .12, (node.y - sink.y) * .35) }
+        : { x: lead.x + (sink.x - lead.x) * .4, y: Math.min(lead.y, sink.y) - height * .18 };
+      // Every follower sweeps upward, then bends into the original leading dot.
+      node.second = { x: sink.x - width * .14, y: sink.y - height * .2 };
+    });
 
     overlay = document.createElement("div");
     overlay.className = "project-collapse-overlay";
@@ -126,9 +147,11 @@
       node.center = svgElement("circle", { cx: node.x, cy: node.y, r: "1.3", fill: node.color });
       scene.append(node.circle, node.center);
     });
-    const core = svgElement("circle", { class: "project-collapse-core", cx: sink.x, cy: sink.y, r: "4", fill: waveColor, opacity: "0" });
-    const ring = svgElement("circle", { class: "project-collapse-ring", cx: sink.x, cy: sink.y, r: "18", opacity: "0" });
-    scene.append(ring, core);
+    // Keep the first row's actual dot visible throughout; it becomes the core.
+    const core = lead.circle;
+    core.setAttribute("class", "project-collapse-core");
+    const ring = svgElement("circle", { class: "project-collapse-ring", cx: lead.x, cy: lead.y, r: "18", opacity: "0" });
+    scene.append(ring, core, lead.center);
     overlay.append(scene, textLayer);
 
     // Snapshot before hiding the original rows. Off-screen rows participate too;
@@ -142,8 +165,8 @@
     history.setAttribute("aria-busy", "true");
     document.body.append(overlay);
 
-    const textEnd = nodes.length ? textDuration + Math.min(nodes.length - 1, 8) * rowStagger : 0;
-    const convergence = nodes.length ? convergeDuration : 350;
+    const textEnd = textDuration + Math.min(nodes.length - 1, 8) * rowStagger;
+    const convergence = Math.max(...nodes.map(node => node.delay + node.duration));
     const collapseEnd = textEnd + convergence;
     const handoffAt = collapseEnd + settleDuration;
     const started = performance.now();
@@ -159,25 +182,35 @@
         view.element.style.transform = `translate(${view.dx * progress}px,${view.dy * progress}px) scale(${1 - progress})`;
         view.element.style.opacity = String(1 - clamp((progress - .65) / .35));
       });
-      const progress = ease(clamp((elapsed - textEnd) / convergence));
-      lines.setAttribute("transform", `translate(${sink.x * progress} ${sink.y * progress}) scale(${1 - progress})`);
-      lines.setAttribute("opacity", String(1 - progress));
+      const departure = elapsed - textEnd;
+      lines.setAttribute("opacity", String(1 - ease(clamp(departure / leadDuration))));
+      let absorbed = 0;
+      let leadPosition = lead;
       nodes.forEach((node, index) => {
-        const x = mix(node.x, sink.x, progress), y = mix(node.y, sink.y, progress);
+        const progress = ease(clamp((departure - node.delay) / node.duration));
+        const { x, y } = curvePoint(node, node.first, node.second, sink, progress);
+        if (index === 0) leadPosition = { x, y };
+        else absorbed += clamp((progress - .9) / .1);
         const absorb = clamp((elapsed - Math.min(index, 8) * rowStagger) / textDuration);
         const pulse = elapsed < textEnd ? Math.sin(absorb * Math.PI) * 2 : 0;
         [node.circle, node.center].forEach(shape => {
           shape.setAttribute("cx", x);
           shape.setAttribute("cy", y);
-          shape.setAttribute("opacity", String(1 - clamp((progress - .85) / .15)));
+          // Followers disappear only after reaching the leading dot, never en route.
+          shape.setAttribute("opacity", index && progress === 1 ? "0" : "1");
         });
         node.circle.setAttribute("r", String(node.radius + pulse));
       });
       const charge = clamp((elapsed - collapseEnd) / settleDuration);
-      core.setAttribute("opacity", String(clamp((progress - .55) / .45)));
-      core.setAttribute("r", String(4 + 9 * progress + 3 * Math.sin(charge * Math.PI)));
+      const merged = nodes.length > 1 ? absorbed / (nodes.length - 1) : clamp(departure / leadDuration);
+      const intakePulse = elapsed < textEnd ? Math.sin(clamp(elapsed / textDuration) * Math.PI) * 2 : 0;
+      core.setAttribute("r", String(lead.radius + intakePulse + 7 * merged + 3 * Math.sin(charge * Math.PI)));
+      core.style.filter = `drop-shadow(0 0 ${merged * 10}px ${waveColor})`;
+      lead.center.setAttribute("r", String(1.3 + merged * 2.5));
+      ring.setAttribute("cx", leadPosition.x);
+      ring.setAttribute("cy", leadPosition.y);
       ring.setAttribute("r", String(18 + charge * 18));
-      ring.setAttribute("opacity", String(clamp((progress - .8) / .2) * .7));
+      ring.setAttribute("opacity", String(charge * .7));
 
       if (elapsed >= handoffAt) {
         if (releaseAt === null) { releaseAt = elapsed; releaseDuration = sound?.pop() || 0; }
@@ -199,6 +232,7 @@
           ring.style.fill = waveFill;
           ring.setAttribute("opacity", String(1 - wave * .6));
           core.setAttribute("opacity", String(1 - wave));
+          lead.center.setAttribute("opacity", String(1 - wave));
           if (wave >= 1) { navigate(); return; }
         }
       }
