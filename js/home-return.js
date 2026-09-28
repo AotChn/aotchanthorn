@@ -41,7 +41,7 @@
     const link = event.target.closest("a[href]");
     if (!link || link.hasAttribute("download") || (link.target && link.target !== "_self")) return;
     const url = new URL(link.href, document.baseURI);
-    if (url.origin !== home.origin || url.pathname !== home.pathname || reducedMotion.matches) return;
+    if (url.origin !== home.origin || url.pathname !== home.pathname || reducedMotion.matches || window.AOT_ANIMATIONS?.enabled === false) return;
     event.preventDefault();
     if (destination) return;
     destination = url;
@@ -59,6 +59,7 @@
 
   document.addEventListener("visibilitychange", () => { if (document.hidden && destination) navigate(); });
   reducedMotion.addEventListener("change", () => { if (reducedMotion.matches && destination) navigate(); });
+  window.AOT_ANIMATIONS?.subscribe((enabled, reason) => { if (!enabled && reason !== "pageshow") navigate(); });
   window.addEventListener("pagehide", stop);
   window.addEventListener("pageshow", restore);
 })();

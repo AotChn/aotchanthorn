@@ -4,7 +4,7 @@
   const page = document.documentElement;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   // Run in the head so the complete graph/title never flash before the intro.
-  if (!reducedMotion.matches) page.classList.add("system-entering");
+  if (!reducedMotion.matches && window.AOT_ANIMATIONS?.enabled !== false) page.classList.add("system-entering");
   const bootstrapFallback = setTimeout(() => page.classList.remove("system-entering"), 8000);
 
   window.createSystemGraphEntrance = function (root, config, callbacks) {
@@ -99,7 +99,7 @@
 
     function start() {
       finish();
-      if (reducedMotion.matches) return;
+      if (reducedMotion.matches || window.AOT_ANIMATIONS?.enabled === false) return;
       active = true;
       elapsed = 0;
       originalInert = root.inert;
@@ -126,12 +126,13 @@
       if (!document.hidden) frame = requestAnimationFrame(tick);
     });
     reducedMotion.addEventListener("change", () => { if (reducedMotion.matches) finish(); });
+    window.AOT_ANIMATIONS?.subscribe(enabled => { if (!enabled) finish(); });
     window.addEventListener("pagehide", finish);
     window.addEventListener("pageshow", event => {
       if (!event.persisted) return;
       // A microtask can run between pageshow listeners. Wait until the next
       // frame so collapse cleanup has restored inert before we save its value.
-      if (!reducedMotion.matches) page.classList.add("system-entering");
+      if (!reducedMotion.matches && window.AOT_ANIMATIONS?.enabled !== false) page.classList.add("system-entering");
       frame = requestAnimationFrame(start);
     });
     start();

@@ -284,7 +284,7 @@
       if (active) { event.preventDefault(); return; }
       const url = new URL(link.href, document.baseURI);
       const page = destinations.find(page => page.url.origin === url.origin && page.url.pathname === url.pathname);
-      if (!page || reducedMotion.matches) return;
+      if (!page || reducedMotion.matches || window.AOT_ANIMATIONS?.enabled === false) return;
       event.preventDefault();
       try { start(url, page); } catch { sound?.stop(); window.location.assign(url.href); }
     });
@@ -294,6 +294,7 @@
     reducedMotion.addEventListener("change", () => {
       if (active && reducedMotion.matches) navigate();
     });
+    window.AOT_ANIMATIONS?.subscribe((enabled, reason) => { if (!enabled && active && reason !== "pageshow") navigate(); });
     window.addEventListener("pagehide", stopClock);
     window.addEventListener("pageshow", restore);
   };

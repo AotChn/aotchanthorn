@@ -37,14 +37,24 @@ nav{
   backdrop-filter:blur(12px);
 }
 
-.nav-logo{
-  font-family:var(--serif);
-  font-size:1rem;
-  letter-spacing:.18em;
+.animations-toggle{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 44px;
+  width:44px;
+  height:44px;
+  margin-right:auto;
+  padding:9px;
+  border:0;
+  background:transparent;
   color:var(--sand);
-  text-transform:uppercase;
-  text-decoration:none;
+  cursor:pointer;
 }
+.animations-toggle svg{width:26px;height:26px;fill:currentColor;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round}
+.transitions-disabled .animations-toggle svg{fill:none}
+.animations-toggle:hover{color:var(--off)}
+.animations-toggle:focus-visible{outline:1px solid var(--sand);outline-offset:3px}
 
 .nav-actions{
   display:flex;
@@ -868,6 +878,10 @@ body.modal-open{
 .hero-sub{animation-delay:.24s}
 .home-grid{animation-delay:.32s}
 
+.transitions-disabled{scroll-behavior:auto}
+.transitions-disabled .hero-eyebrow,.transitions-disabled .page-head,.transitions-disabled .hero-title,
+.transitions-disabled .hero-copy,.transitions-disabled .hero-sub,.transitions-disabled .home-grid{animation:none}
+
 @media (max-width: 900px){
   nav,.hero-page,.section,.page-main,.page-footer{padding-left:1.5rem;padding-right:1.5rem}
   .home-grid,.skills-two-col{grid-template-columns:1fr}
@@ -888,7 +902,6 @@ body.modal-open{
     overflow-y:auto;
     overscroll-behavior:contain;
   }
-  .nav-logo{font-size:.88rem}
   .nav-toggle{display:inline-flex}
   .nav-actions{
     width:100%;

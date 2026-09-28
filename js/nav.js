@@ -2,6 +2,19 @@
   const nav = document.querySelector("nav");
   const toggle = document.querySelector(".nav-toggle");
   const navActions = document.querySelector(".nav-actions");
+  const animationsToggle = document.querySelector(".animations-toggle");
+
+  if (animationsToggle && window.AOT_ANIMATIONS) {
+    function updateAnimationsToggle(enabled) {
+      animationsToggle.setAttribute("aria-pressed", String(enabled));
+      animationsToggle.setAttribute("title", "Turn transition animations " + (enabled ? "off" : "on"));
+    }
+    animationsToggle.addEventListener("click", () => {
+      window.AOT_ANIMATIONS.setEnabled(!window.AOT_ANIMATIONS.enabled);
+    });
+    window.AOT_ANIMATIONS.subscribe(updateAnimationsToggle);
+    updateAnimationsToggle(window.AOT_ANIMATIONS.enabled);
+  }
 
   if (!nav || !toggle || !navActions) return;
 

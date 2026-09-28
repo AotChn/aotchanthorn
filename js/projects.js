@@ -3,14 +3,14 @@
   // type: "work", "personal", or "school"; leave "" to show an em dash.
   // lastUpdated: "YYYY-MM-DD"; leave "" until a real project date is available.
   // function: short description in the history row. Full details stay in the popup.
-  // nodeColor: node fill and glow color (hex), using the home graph palette.
+  // nodeColor: resting node fill and glow. The active row uses highlightColor below.
   // Timeline branches follow type; blank types stay on the main line.
   const projects = [
     {
       tag: "Locomotion · Robotics",
       title: "Robot Reinforcement Training",
       type: "",
-      nodeColor: "#a5c4f0",
+      nodeColor: "#eeeeee",
       lastUpdated: "",
       function: "Train robot policies from video demonstrations.",
       displayTitleHtml: "Robot <em>Reinforcement</em> Training",
@@ -28,7 +28,7 @@
       tag: "Gradient Descent · Pokemon",
       title: "Voltorb Flip Machine Learning Solver",
       type: "",
-      nodeColor: "#c379ff",
+      nodeColor: "#eeeeee",
       lastUpdated: "",
       function: "Optimize Voltorb Flip moves under uncertainty.",
       displayTitleHtml: "Voltorb Flip <em>Machine Learning</em> Solver",
@@ -46,7 +46,7 @@
       tag: "Neuroevolution · Neural Networks",
       title: "Evolution N.E.A.T Simulator",
       type: "",
-      nodeColor: "#5ce0de",
+      nodeColor: "#eeeeee",
       lastUpdated: "",
       function: "Evolve neural network structures and weights.",
       displayTitleHtml: "Evolution <em>N.E.A.T</em> Simulator",
@@ -64,7 +64,7 @@
       tag: "",
       title: "Guppy AI Speech Trainer",
       type: "",
-      nodeColor: "#f6b7bd",
+      nodeColor: "#eeeeee",
       lastUpdated: "",
       function: "AI-assisted speech training.",
       displayTitleHtml: "Guppy <em>AI</em> Speech Trainer",
@@ -82,7 +82,7 @@
       tag: "",
       title: "Navify Map Pathfinder ",
       type: "",
-      nodeColor: "#85f5b5",
+      nodeColor: "#eeeeee",
       lastUpdated: "",
       function: "Find routes on a map.",
       displayTitleHtml: "Navify <em>Map</em> Pathfinder ",
@@ -100,7 +100,7 @@
       tag: "",
       title: "Chip8 Emulator",
       type: "",
-      nodeColor: "#ffc353",
+      nodeColor: "#eeeeee",
       lastUpdated: "",
       function: "Emulate CHIP-8 programs.",
       displayTitleHtml: "Chip8 <em>Emulator</em>",
@@ -118,7 +118,7 @@
       tag: "",
       title: "SQL from Scratch",
       type: "",
-      nodeColor: "#ff7581",
+      nodeColor: "#eeeeee",
       lastUpdated: "",
       function: "Run SQL queries in a custom C++ database engine.",
       displayTitleHtml: "<em>SQL</em> from scratch",
@@ -136,7 +136,7 @@
       tag: "",
       title: "Maze Mini Game",
       type: "",
-      nodeColor: "#fa70ff",
+      nodeColor: "#eeeeee",
       lastUpdated: "",
       function: "Explore a maze in 2D and first person.",
       displayTitleHtml: "Maze Mini <em>Game<em>",
@@ -155,7 +155,7 @@
       tag: "",
       title: "Graphing Calculator App",
       type: "",
-      nodeColor: "#e4e890",
+      nodeColor: "#eeeeee",
       lastUpdated: "",
       function: "Parse functions and plot interactive graphs.",
       displayTitleHtml: "Graphing Calculator",
@@ -204,6 +204,8 @@
   const modalCloseButton = document.querySelector(".project-modal-close");
 
   let lastProjectTrigger = null;
+  let hoveredProject = null, focusedProject = null, selectedProject = null;
+  const highlightColor = "#85f5b5";
   const projectTypes = { work: "Work", personal: "Personal", school: "School" };
   const dateFormatter = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
@@ -212,6 +214,15 @@
     if (className) element.className = className;
     if (text) element.textContent = text;
     return element;
+  }
+
+  function highlightProjectNode() {
+    const highlighted = selectedProject ?? hoveredProject ?? focusedProject;
+    historyGraph?.querySelectorAll(".project-history-node").forEach(node => {
+      const index = node.dataset.projectIndex;
+      node.style.setProperty("--project-node-color", index === highlighted
+        ? highlightColor : projects[Number(index)].nodeColor || "#eeeeee");
+    });
   }
 
   function createProjectItem(project, index) {
@@ -260,7 +271,7 @@
     const points = rows.map(row => {
       const title = row.querySelector(".project-title-button").getBoundingClientRect();
       const project = projects[Number(row.dataset.projectIndex)];
-      return { type: row.dataset.projectType, color: project.nodeColor || "#a5c4f0", index: row.dataset.projectIndex,
+      return { type: row.dataset.projectType, color: project.nodeColor || "#eeeeee", index: row.dataset.projectIndex,
         y: title.top + title.height / 2 - bounds.top };
     });
     function draw(tag, attributes, parent = historyGraph) {
@@ -290,6 +301,7 @@
       draw("circle", { class: "project-history-dot", r: 5 }, node);
       draw("circle", { class: "project-history-dot-core", r: 1.3 }, node);
     });
+    highlightProjectNode();
     historyTable.projectEntrance?.refresh();
   }
 
@@ -327,6 +339,8 @@
   }
 
   function openProjectModal(project, trigger) {
+    selectedProject = trigger.closest(".project-row").dataset.projectIndex;
+    highlightProjectNode();
     modalTitle.textContent = project.title || "";
     modalTag.textContent = project.tag || "";
     modalSummary.textContent = project.summary || project.description || "";
@@ -354,12 +368,15 @@
     projectModal.querySelectorAll("video").forEach(video => video.pause());
     projectModal.hidden = true;
     document.body.classList.remove("modal-open");
+    selectedProject = null;
     if (lastProjectTrigger) lastProjectTrigger.focus({ preventScroll: true });
+    highlightProjectNode();
   }
 
   function renderProjects() {
     if (!projectsList) return;
 
+    hoveredProject = focusedProject = null;
     projectsList.replaceChildren();
     let count = 0;
     projects.forEach(function (project, index) {
@@ -380,6 +397,25 @@
   if ("ResizeObserver" in window) new ResizeObserver(drawHistoryGraph).observe(historyTable);
   else window.addEventListener("resize", drawHistoryGraph);
   document.fonts?.ready.then(drawHistoryGraph);
+
+  projectsList.addEventListener("pointerover", event => {
+    if (event.pointerType === "touch") return;
+    hoveredProject = event.target.closest(".project-row")?.dataset.projectIndex ?? null;
+    highlightProjectNode();
+  });
+  projectsList.addEventListener("pointerout", event => {
+    if (event.pointerType === "touch") return;
+    hoveredProject = event.relatedTarget?.closest(".project-row")?.dataset.projectIndex ?? null;
+    highlightProjectNode();
+  });
+  projectsList.addEventListener("focusin", event => {
+    focusedProject = event.target.closest(".project-row")?.dataset.projectIndex ?? null;
+    highlightProjectNode();
+  });
+  projectsList.addEventListener("focusout", event => {
+    focusedProject = event.relatedTarget?.closest(".project-row")?.dataset.projectIndex ?? null;
+    highlightProjectNode();
+  });
 
   projectsList.addEventListener("click", function (event) {
     const row = event.target.closest(".project-row");

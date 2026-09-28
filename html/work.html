@@ -9,13 +9,18 @@
 <link rel="stylesheet" href="../css/portfolio.css">
 <link rel="stylesheet" href="../css/projects.css">
 <link rel="stylesheet" href="../css/page-transition.css">
+<script src="../js/animation-preferences.js"></script>
 <script src="../js/page-reveal.js"></script>
 <script src="../js/projects-entrance.js"></script>
 </head>
 <body>
 
 <nav>
-  <a class="nav-logo" href="portfolio.html">Browse</a>
+  <button class="animations-toggle" type="button" aria-label="Transition animations" aria-pressed="true">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="m12 2 3.09 6.26 6.91 1-5 4.87 1.18 6.87L12 17.76l-6.18 3.24L7 14.13 2 9.26l6.91-1Z"/>
+    </svg>
+  </button>
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav-links" aria-label="Toggle navigation">
     <span class="nav-toggle-lines" aria-hidden="true">
       <span class="nav-toggle-line"></span>
@@ -34,9 +39,7 @@
 
 <main class="page-shell page-main">
   <div class="page-head">
-    <div class="section-index">02</div>
     <h1 class="page-title">Projects</h1>
-    <p class="page-copy">Few of my projects completed at work, school, and personal time.</p>
   </div>
 
   <section class="project-history" aria-label="Project history">

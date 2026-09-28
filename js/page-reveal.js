@@ -10,7 +10,7 @@
   } catch { return; }
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   if (!handoff || handoff.path !== window.location.pathname || !Number.isFinite(handoff.at) ||
-      Math.abs(Date.now() - handoff.at) > 15000 || reducedMotion.matches ||
+      Math.abs(Date.now() - handoff.at) > 15000 || reducedMotion.matches || window.AOT_ANIMATIONS?.enabled === false ||
       !Number.isFinite(handoff.x) || !Number.isFinite(handoff.y)) return;
 
   const root = document.documentElement;
@@ -18,6 +18,7 @@
   const x = Math.max(0, Math.min(1, handoff.x));
   const y = Math.max(0, Math.min(1, handoff.y));
   let timer;
+  let unsubscribe;
   function sizeWave() {
     const width = window.innerWidth, height = window.innerHeight;
     const radius = Math.ceil(Math.hypot(Math.max(x, 1 - x) * width, Math.max(y, 1 - y) * height)) + 2;
@@ -36,6 +37,7 @@
     window.removeEventListener("scroll", sizeWave);
     document.removeEventListener("animationend", onAnimationEnd);
     reducedMotion.removeEventListener("change", finish);
+    unsubscribe?.();
   }
   function onAnimationEnd(event) {
     if (event.target === document.body && event.animationName === "page-wave-content") finish();
@@ -55,4 +57,5 @@
   window.addEventListener("scroll", sizeWave, { passive: true });
   window.addEventListener("pageshow", event => { if (event.persisted) finish(); });
   reducedMotion.addEventListener("change", finish);
+  unsubscribe = window.AOT_ANIMATIONS?.subscribe(enabled => { if (!enabled) finish(); });
 })();

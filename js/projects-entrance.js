@@ -4,7 +4,7 @@
   const page = document.documentElement;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   // Set before first paint, including when Work arrives through a page wave.
-  if (!reducedMotion.matches) page.classList.add("projects-entering");
+  if (!reducedMotion.matches && window.AOT_ANIMATIONS?.enabled !== false) page.classList.add("projects-entering");
   const bootstrapFallback = setTimeout(() => page.classList.remove("projects-entering"), 8000);
 
   window.createProjectsEntrance = function (root, history) {
@@ -106,7 +106,7 @@
     function start() {
       finish();
       refresh();
-      if (settings.enabled === false || reducedMotion.matches || !nodes.length) return;
+      if (settings.enabled === false || reducedMotion.matches || window.AOT_ANIMATIONS?.enabled === false || !nodes.length) return;
       active = true;
       elapsed = 0;
       originalInert = root.inert;
@@ -128,11 +128,12 @@
 
     document.addEventListener("visibilitychange", visibilityChanged);
     reducedMotion.addEventListener("change", () => { if (reducedMotion.matches) finish(); });
+    window.AOT_ANIMATIONS?.subscribe(enabled => { if (!enabled) finish(); });
     window.addEventListener("pagehide", finish);
     window.addEventListener("pageshow", event => {
       if (!event.persisted) return;
       // Let the outgoing transition restore its inert state before replaying.
-      if (settings.enabled !== false && !reducedMotion.matches) page.classList.add("projects-entering");
+      if (settings.enabled !== false && !reducedMotion.matches && window.AOT_ANIMATIONS?.enabled !== false) page.classList.add("projects-entering");
       frame = requestAnimationFrame(start);
     });
     visibilityChanged();

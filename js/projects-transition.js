@@ -256,13 +256,14 @@
     if (destination) { event.preventDefault(); return; }
     const url = new URL(link.href, document.baseURI);
     const page = destinations.find(page => page.url.origin === url.origin && page.url.pathname === url.pathname);
-    if (!page || reducedMotion.matches) return;
+    if (!page || reducedMotion.matches || window.AOT_ANIMATIONS?.enabled === false) return;
     event.preventDefault();
     try { start(url, page.label); }
     catch { destination = url; navigate(); }
   });
   document.addEventListener("visibilitychange", () => { if (document.hidden) navigate(); });
   reducedMotion.addEventListener("change", () => { if (reducedMotion.matches) navigate(); });
+  window.AOT_ANIMATIONS?.subscribe((enabled, reason) => { if (!enabled && reason !== "pageshow") navigate(); });
   window.addEventListener("pagehide", stop);
   window.addEventListener("pageshow", restore);
 })();
