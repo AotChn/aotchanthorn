@@ -28,6 +28,7 @@
   let hovered = null;
   let focused = null;
   let selection = null;
+  let showingTitles = false;
   let isolatedEdges = new Set();
   let visible = true;
   let frame = null;
@@ -62,6 +63,7 @@
   }
 
   function positionLabel(label, node) {
+    label.setAttribute("x", "0");
     const width = portrait.matches ? 860 : 1280;
     label.setAttribute("y", portrait.matches ? (node.y < 80 ? "56" : "-42") : node.y < 45 ? "48" : "-30");
     const left = portrait.matches ? width * 0.25 : 100;
@@ -81,6 +83,59 @@
     const scale = svg.getScreenCTM()?.a;
     const minimum = portrait.matches || touchInput.matches ? 14 : 0;
     if (scale > 0) root.style.setProperty("--graph-node-label-size", Math.max(24, minimum / scale) + "px");
+    arrangeLabels();
+  }
+
+  function arrangeLabels() {
+    nodeViews.forEach((view, id) => positionLabel(view.label, nodes.get(id)));
+    if (!showingTitles || !portrait.matches) return;
+    // Stagger neighboring phone labels so revealing the entire graph stays legible.
+    const occupied = config.nodes.map(node => ({ x: node.x - 20, y: node.y - 20, width: 40, height: 40 }));
+    const overlaps = (a, b) => a.x < b.x + b.width + 8 && a.x + a.width + 8 > b.x
+      && a.y < b.y + b.height + 8 && a.y + a.height + 8 > b.y;
+    nodeViews.forEach((view, id) => {
+      const node = nodes.get(id), label = view.label;
+      if (!node.label) return;
+      const anchor = label.getAttribute("text-anchor");
+      const above = Number(label.getAttribute("y"));
+      const candidates = [
+        [0, above, anchor], [0, 60, anchor],
+        [32, 14, "start"], [-32, 14, "end"],
+        [0, -88, anchor], [0, 106, anchor],
+        [0, above, "start"], [0, above, "end"],
+        ...[60, -88, 106, -132, 150].flatMap(y =>
+          [anchor, "start", "end"].map(align => [0, y, align]))
+      ];
+      let best = null, lowest = Infinity;
+      candidates.forEach(([x, y, align]) => {
+        label.setAttribute("x", x);
+        label.setAttribute("y", y);
+        label.setAttribute("text-anchor", align);
+        const box = label.getBBox();
+        const bounds = { x: node.x + box.x, y: node.y + box.y, width: box.width, height: box.height };
+        if (bounds.x < -12 || bounds.x + bounds.width > 872 || bounds.y < -27 || bounds.y + bounds.height > 1307) return;
+        const score = occupied.filter(other => overlaps(bounds, other)).length;
+        if (score < lowest) { lowest = score; best = { x, y, align, bounds }; }
+      });
+      if (best) {
+        label.setAttribute("x", best.x);
+        label.setAttribute("y", best.y);
+        label.setAttribute("text-anchor", best.align);
+        occupied.push(best.bounds);
+      } else positionLabel(label, node);
+    });
+  }
+
+  function showAllTitles(show) {
+    showingTitles = show;
+    root.classList.toggle("show-all-titles", show);
+    nodeViews.forEach((view, id) => {
+      if (nodes.get(id).action !== "toggle-labels") return;
+      view.group.classList.toggle("is-selected", show);
+      view.group.setAttribute("aria-pressed", String(show));
+      view.group.setAttribute("aria-label", show ? "Hide all node titles" : "Show all node titles");
+    });
+    arrangeLabels();
   }
 
   layoutGraph();
@@ -132,6 +187,7 @@
   }
 
   function isolateComponent(key) {
+    showAllTitles(false);
     selection = key;
     const [kind, id] = (key || "").split(":");
     hitSound?.setActive(false);
@@ -148,7 +204,7 @@
     });
     nodeViews.forEach((view, nodeId) => {
       const selected = kind === "node" && nodeId === id;
-      view.group.classList.toggle("is-muted", key !== null && !connectedNodes.has(nodeId));
+      view.group.classList.toggle("is-muted", key !== null && !connectedNodes.has(nodeId) && nodes.get(nodeId).action !== "toggle-labels");
       view.group.classList.toggle("is-selected", selected);
       view.group.classList.toggle("is-endpoint", kind === "edge" && connectedNodes.has(nodeId));
       view.group.setAttribute("aria-pressed", String(selected));
@@ -199,11 +255,15 @@
     if (kind === "node") {
       const selectedEdge = selection?.startsWith("edge:") ? edges.get(selection.slice(5)) : null;
       // Selected nodes and edge endpoints already have a persistent title.
-      if (selection === key || (selectedEdge && (selectedEdge.from === id || selectedEdge.to === id))) {
+      if (showingTitles || selection === key || (selectedEdge && (selectedEdge.from === id || selectedEdge.to === id))) {
         tooltip.hidden = true;
         return;
       }
       const node = nodes.get(id);
+      if (!node.label) {
+        tooltip.hidden = true;
+        return;
+      }
       tooltip.append(element("strong", {}, node.label));
     } else {
       const edge = edges.get(id);
@@ -231,6 +291,14 @@
 
   function explore(group, key, anchor) {
     if (transitioning || entering) return;
+    if (key.startsWith("node:") && nodes.get(key.slice(5)).action === "toggle-labels") {
+      const show = !showingTitles;
+      clearIsolation();
+      showAllTitles(show);
+      group.focus({ preventScroll: true });
+      tooltip.hidden = true;
+      return;
+    }
     isolateComponent(selection === key ? null : key);
     // Drawing an edge last moves it in the DOM, so restore focus afterwards.
     group.focus({ preventScroll: true });
@@ -293,14 +361,26 @@
   });
 
   nodes.forEach((node, id) => {
+    const overview = node.action === "toggle-labels";
     const group = svgElement("g", {
-      class: "system-node", "data-node-id": id, transform: "translate(" + node.x + " " + node.y + ")",
-      tabindex: "0", role: "button", "aria-label": node.label + ": isolate connections", "aria-pressed": "false"
+      class: "system-node" + (overview ? " system-node-overview" : ""), "data-node-id": id, transform: "translate(" + node.x + " " + node.y + ")",
+      tabindex: "0", role: "button", "aria-label": overview ? "Show all node titles" : node.label + ": isolate connections", "aria-pressed": "false"
     });
+    if (overview) {
+      group.style.setProperty("--node-pulse-duration", (node.pulseDuration || 3.2) + "s");
+      group.style.setProperty("--node-pulse-scale", String(node.pulseScale || 1.12));
+    }
     const hit = svgElement("circle", { class: "system-node-hit", r: "24" });
     const ring = svgElement("circle", { class: "system-node-ring", r: "17" });
-    const focus = svgElement("circle", { class: "system-node-focus", r: "19" });
-    const body = svgElement("circle", { class: "system-node-body", r: "13" });
+    const rhombus = node.shape === "rhombus";
+    const focus = svgElement(rhombus ? "polygon" : "circle", {
+      class: "system-node-focus",
+      ...(rhombus ? { points: "0,-24 19,0 0,24 -19,0" } : { r: "19" })
+    });
+    const body = svgElement(rhombus ? "polygon" : "circle", {
+      class: "system-node-body",
+      ...(rhombus ? { points: "0,-17 13,0 0,17 -13,0" } : { r: "13" })
+    });
     const label = svgElement("text", {
       class: "system-node-label",
       "aria-hidden": "true"
@@ -333,7 +413,7 @@
   }, true);
 
   document.addEventListener("click", event => {
-    if (transitioning || selection === null) return;
+    if (transitioning || (selection === null && !showingTitles)) return;
     // Keep the selection while reading or selecting the note's text.
     if (event.target.closest("[data-node-note]")) return;
     const component = event.target.closest(".system-node, .system-edge");
@@ -421,6 +501,7 @@
 
   function syncPlayback() {
     const running = !transitioning && !entering && !reducedMotion.matches && visible && !document.hidden;
+    root.classList.toggle("is-flow-paused", !running);
     hitSound?.setActive(running && selection !== null);
     if (frame !== null) cancelAnimationFrame(frame);
     frame = null;

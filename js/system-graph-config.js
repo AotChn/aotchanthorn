@@ -11,6 +11,9 @@
 //   hitPitch    = optional mechanical hit pitch in Hz; omit for an automatic pitch
 //   x, y        = position on the 1280 × 860 canvas
 //                 Portrait phones automatically swap the axes of nodes and bends.
+//   action      = "toggle-labels" for an unconnected node that reveals all titles
+//   shape       = "rhombus" for a diamond; omit for the usual circle
+//   pulseDuration / pulseScale = gentle pulse timing (seconds) and size for that node
 //
 // EDGES
 //   label       = hover title; leave "" for no title
@@ -68,6 +71,12 @@ window.AOT_SYSTEM_GRAPH = {
     volume: 0.16 // Typing sound volume (0–1); matches the pinball volume
   },
   nodes: [
+    {
+      id: "overview", label: "", action: "toggle-labels", shape: "rhombus",
+      color: "#eeeeee", outputColor: "#eeeeee",
+      pulseDuration: 3.2, pulseScale: 1.12,
+      phase: 0, x: 640, y: 75
+    },
     {
       id: "needs", label: "Needs",
       note: "Bear necessities.",

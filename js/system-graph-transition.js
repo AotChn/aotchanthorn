@@ -177,9 +177,13 @@
         return { edge, line, flow };
       });
       const nodeViews = config.nodes.filter(node => node.id !== sink.id).map(node => {
-        const circle = svgElement("circle", { r: "13", fill: node.color, stroke: config.nodeOutline, "stroke-width": "1.4" });
-        nodeGroup.append(circle);
-        return { circle, path: geometry.paths.get(node.id) };
+        const rhombus = node.shape === "rhombus";
+        const shape = svgElement(rhombus ? "polygon" : "circle", {
+          ...(rhombus ? { points: "0,-17 13,0 0,17 -13,0" } : { r: "13" }),
+          fill: node.color, stroke: config.nodeOutline, "stroke-width": "1.4"
+        });
+        nodeGroup.append(shape);
+        return { shape, rhombus, path: geometry.paths.get(node.id) };
       });
       const core = svgElement("circle", { class: "system-collapse-core", cx: sink.x, cy: sink.y, r: "13", fill: sink.color });
       const ring = svgElement("circle", { class: "system-collapse-ring", cx: sink.x, cy: sink.y, r: "17", opacity: "0" });
@@ -213,12 +217,16 @@
           flow.setAttribute("opacity", String(Math.min(1, (1 - progress) * 8)));
           flow.setAttribute("stroke-dashoffset", String(-elapsed * 0.45));
         });
-        nodeViews.forEach(({ circle, path }) => {
+        nodeViews.forEach(({ shape, rhombus, path }) => {
           const point = pointAt(path, path.length * progress);
-          circle.setAttribute("cx", point[0]);
-          circle.setAttribute("cy", point[1]);
-          circle.setAttribute("r", String(13 - 8 * progress));
-          circle.setAttribute("opacity", String(Math.min(1, (1 - progress) * 12)));
+          if (rhombus) {
+            shape.setAttribute("transform", "translate(" + point[0] + " " + point[1] + ") scale(" + (1 - 8 / 13 * progress) + ")");
+          } else {
+            shape.setAttribute("cx", point[0]);
+            shape.setAttribute("cy", point[1]);
+            shape.setAttribute("r", String(13 - 8 * progress));
+          }
+          shape.setAttribute("opacity", String(Math.min(1, (1 - progress) * 12)));
         });
         const charge = clamp((elapsed - collapseEnd) / settleDuration);
         core.setAttribute("r", String(13 + 10 * progress + 4 * Math.sin(charge * Math.PI)));
