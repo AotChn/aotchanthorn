@@ -81,6 +81,10 @@
   // }
 
   const pageSize = 5;
+  // The build reads these values without running any browser rendering code.
+  window.AOT_LIFE_UPDATES = lifeUpdates;
+  window.AOT_MEMO_PAGE_SIZE = pageSize;
+  if (typeof document === "undefined") return;
 
   function getHashSlug() {
     return window.location.hash.replace("#", "");
@@ -109,12 +113,11 @@
   }
 
   function createUpdateCard(update) {
-    const card = createElement("article", "update-card");
+    const card = createElement("a", "update-card");
+    card.href = window.AOT_CONTENT_URLS.memo(update);
     card.id = update.slug;
     card.dataset.updateSlug = update.slug;
     card.tabIndex = 0;
-    card.setAttribute("role", "button");
-    card.setAttribute("aria-label", "Open life update: " + update.title);
     card.setAttribute("aria-haspopup", "dialog");
 
     const meta = createElement("div", "update-card-meta", update.label);
@@ -190,6 +193,9 @@
     const memoModalClose = document.getElementById("memo-modal-close");
 
     if (!updatesList || !olderButton || !newerButton || !countLabel || !memoModal || !memoModalTag || !memoModalTitle || !memoModalSummary || !memoModalMedia || !memoModalDetails || !memoModalClose) return;
+    const cards = new Map([...updatesList.querySelectorAll(".update-card")]
+      .map(card => [card.dataset.updateSlug, card]));
+    cards.forEach(card => card.setAttribute("aria-haspopup", "dialog"));
 
     let targetSlug = getHashSlug();
     let shouldScrollToTarget = Boolean(targetSlug);
@@ -198,7 +204,7 @@
     const highlightedIndex = lifeUpdates.findIndex(function (update) {
       return update.slug === targetSlug;
     });
-    let page = highlightedIndex >= 0 ? Math.floor(highlightedIndex / pageSize) : 0;
+    let page = highlightedIndex >= 0 ? Math.floor(highlightedIndex / pageSize) : Number(updatesList.dataset.page) || 0;
 
     function scrollToUpdateCard(slug) {
       const selectedCard = document.getElementById(slug);
@@ -290,12 +296,17 @@
 
       updatesList.replaceChildren();
       lifeUpdates.slice(start, end).forEach(function (update) {
-        updatesList.appendChild(createUpdateCard(update));
+        if (!cards.has(update.slug)) cards.set(update.slug, createUpdateCard(update));
+        updatesList.appendChild(cards.get(update.slug));
       });
 
       countLabel.textContent = "Total Memos: " + lifeUpdates.length;
-      newerButton.disabled = page === 0;
-      olderButton.disabled = end >= lifeUpdates.length;
+      [[newerButton, page === 0, page - 1], [olderButton, end >= lifeUpdates.length, page + 1]]
+        .forEach(([link, disabled, next]) => {
+          link.setAttribute("aria-disabled", String(disabled));
+          link.tabIndex = disabled ? -1 : 0;
+          link.href = window.AOT_CONTENT_URLS.memoPage(disabled ? page : Math.max(0, next));
+        });
 
       if (shouldScrollToTarget && targetSlug) {
         requestAnimationFrame(function () {
@@ -313,21 +324,29 @@
       }
     }
 
-    newerButton.addEventListener("click", function () {
+    newerButton.addEventListener("click", function (event) {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
       if (page === 0) return;
       page -= 1;
+      window.history.replaceState(null, "", window.AOT_CONTENT_URLS.memoPage(page));
       renderPage();
     });
 
-    olderButton.addEventListener("click", function () {
+    olderButton.addEventListener("click", function (event) {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
       if ((page + 1) * pageSize >= lifeUpdates.length) return;
       page += 1;
+      window.history.replaceState(null, "", window.AOT_CONTENT_URLS.memoPage(page));
       renderPage();
     });
 
     updatesList.addEventListener("click", function (event) {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       const selectedCard = event.target.closest(".update-card");
       if (!selectedCard) return;
+      event.preventDefault();
 
       const selectedUpdate = lifeUpdates.find(function (update) {
         return update.slug === selectedCard.dataset.updateSlug;
@@ -342,7 +361,7 @@
       const selectedCard = event.target.closest(".update-card");
       if (!selectedCard) return;
 
-      if (event.key === "Enter" || event.key === " ") {
+      if (event.key === " " && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
         event.preventDefault();
         const selectedUpdate = lifeUpdates.find(function (update) {
           return update.slug === selectedCard.dataset.updateSlug;

@@ -49,6 +49,7 @@
     <div class="system-canvas" data-graph-canvas>
       <svg class="system-svg" viewBox="0 0 1280 860" role="group" aria-labelledby="system-title" aria-describedby="system-svg-desc" data-graph-svg>
         <desc id="system-svg-desc">Hover or focus a node to see its title. Select the unconnected, gently pulsing node to show every title at once. Select another node to animate and sound its incoming and outgoing connections, or select an edge to isolate that connection. Click empty space or press Escape to restore the silent full graph. Pulses move from each source to its destinations. Satisfaction is the final output.</desc>
+        <!-- static:graph --><!-- /static:graph -->
       </svg>
       <div class="system-tooltip" role="tooltip" id="system-tooltip" hidden data-graph-tooltip></div>
     </div>
@@ -59,7 +60,7 @@
       </p>
       <p class="system-sr-only" role="status" aria-live="polite" aria-atomic="true" data-note-announcement></p>
     </div>
-    <noscript><p class="system-noscript">Enable JavaScript to explore the interactive system graph.</p></noscript>
+    <!-- static:graph-notes --><!-- /static:graph-notes -->
   </section>
 
   <div class="hero-sub">
@@ -72,12 +73,13 @@
     <div class="hero-meta">Current Happenings</div>
   </div>
 
-  <section class="home-grid" data-home-updates></section>
+  <section class="home-grid" data-home-updates><!-- static:home-memos --><!-- /static:home-memos --></section>
   <div class="home-grid-note">
     <a class="clink" href="writing.html">View All Updates</a>
   </div>
 </main>
 
+<script src="../js/content-urls.js"></script>
 <script src="../js/life-updates.js"></script>
 <script src="../js/nav.js"></script>
 <script src="../js/system-graph-config.js"></script>

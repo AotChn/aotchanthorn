@@ -45,12 +45,14 @@
   </div>
 
   <div class="updates-head">
-    <div class="updates-count" data-updates-count></div>
+    <div class="updates-count" data-updates-count><!-- static:memo-count --><!-- /static:memo-count --></div>
   </div>
-  <div class="updates-list" data-life-updates-list></div>
+  <div class="updates-list" data-life-updates-list data-page="0"><!-- static:memos --><!-- /static:memos --></div>
   <div class="updates-pagination">
-    <button class="clink updates-button" type="button" data-updates-newer>View Newer</button>
-    <button class="clink updates-button" type="button" data-updates-older>View Older</button>
+    <!-- static:memo-pagination -->
+    <a class="clink updates-button" href="writing.html" data-updates-newer aria-disabled="true" tabindex="-1">View Newer</a>
+    <a class="clink updates-button" href="writing.html" data-updates-older aria-disabled="true" tabindex="-1">View Older</a>
+    <!-- /static:memo-pagination -->
   </div>
 
   <div class="page-tail">
@@ -71,6 +73,7 @@
   </div>
 </div>
 
+<script src="../js/content-urls.js"></script>
 <script src="../js/life-updates.js"></script>
 <script src="../js/nav.js"></script>
 <script src="../js/system-graph-config.js"></script>

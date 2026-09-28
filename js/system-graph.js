@@ -340,6 +340,7 @@
 
   const edgeLayer = svgElement("g", { "aria-label": "Directed connections" });
   const nodeLayer = svgElement("g", { "aria-label": "System nodes" });
+  svg.querySelector("[data-static-graph]")?.remove();
   svg.append(edgeLayer, nodeLayer);
 
   edges.forEach((edge, id) => {

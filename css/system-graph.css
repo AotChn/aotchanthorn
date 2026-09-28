@@ -17,6 +17,9 @@
 .system-entering .system-heading{visibility:hidden}
 .system-entering .is-title-revealing .system-heading{visibility:visible}
 .system-entering .system-node,.system-entering .system-edge{opacity:0;transition:none;pointer-events:none}
+.system-entering [data-static-graph]{visibility:hidden}
+[data-static-graph] .system-node-label{display:block}
+[data-static-graph] .system-node{cursor:default}
 .system-entering .system-home .hero-meta,
 .system-entering .system-home .home-grid,
 .system-entering .system-home .page-footer{visibility:hidden}

@@ -630,7 +630,7 @@ nav{
   margin-top:1.5rem;
 }
 
-.updates-button[disabled]{
+.updates-button[disabled],.updates-button[aria-disabled="true"]{
   opacity:.35;
   pointer-events:none;
 }

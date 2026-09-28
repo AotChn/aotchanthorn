@@ -46,14 +46,14 @@
     <div class="project-history-toolbar">
       <label class="project-view-filter">
         <span class="project-visually-hidden">Filter projects by type</span>
-        <select data-project-filter>
+        <select data-project-filter disabled>
           <option value="all">All projects</option>
           <option value="work">Work</option>
           <option value="personal">Personal</option>
           <option value="school">School</option>
         </select>
       </label>
-      <span class="project-count" data-project-count role="status"></span>
+      <span class="project-count" data-project-count role="status"><!-- static:project-count --><!-- /static:project-count --></span>
     </div>
     <div class="project-history-table" data-project-history>
       <svg class="project-history-graph" aria-hidden="true" focusable="false" data-project-history-graph></svg>
@@ -75,9 +75,9 @@
             <th scope="col">Last updated</th>
           </tr>
         </thead>
-        <tbody data-projects-list></tbody>
+        <tbody data-projects-list><!-- static:projects --><!-- /static:projects --></tbody>
       </table>
-      <p class="project-history-empty" data-project-empty hidden>No projects match this type.</p>
+      <p class="project-history-empty" data-project-empty hidden></p>
     </div>
   </section>
 
@@ -106,6 +106,7 @@
 </footer>
 
 <script src="../js/system-graph-config.js"></script>
+<script src="../js/content-urls.js"></script>
 <script src="../js/projects.js"></script>
 <script src="../js/nav.js"></script>
 <script src="../js/system-graph-transition-sound.js"></script>

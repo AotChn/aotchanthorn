@@ -1,0 +1,16 @@
+/* Native navigation and readable content remain available without JavaScript. */
+.animations-control,.animations-toggle,.nav-toggle{display:none!important}
+nav{height:auto;min-height:4rem}
+nav .nav-actions{display:flex!important;position:static;width:auto;flex-wrap:wrap;justify-content:flex-end;background:none;border:0;box-shadow:none;padding:0;gap:.5rem}
+nav .nav-actions .clink{width:auto}
+.project-graph-cell,.project-col-graph,.project-table th:first-child{display:none}
+.system-node-overview .system-node-body{animation:none}
+.system-noscript summary{cursor:pointer;color:var(--sand)}
+.system-noscript dt{font-weight:600;margin-top:1rem}
+.system-noscript dd{margin:.35rem 0 1rem;color:var(--sand-dim)}
+.system-noscript ul{padding-left:1.25rem;margin-top:1rem}
+@media(max-width:800px){
+  nav{position:relative;flex-wrap:wrap;gap:.5rem;padding:1rem}
+  nav .nav-actions{width:100%;justify-content:center}
+  .page-main,.hero-page,.system-home .hero-page{padding-top:2rem}
+}

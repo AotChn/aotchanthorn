@@ -188,12 +188,19 @@
     //if "$%^" for stack then copy chip
   ];
 
+  // The static build reads this same list; keep editing the entries above.
+  window.AOT_PROJECTS = projects;
+  if (typeof document === "undefined") return;
+
   const projectsList = document.querySelector("[data-projects-list]");
   const historyTable = document.querySelector("[data-project-history]");
   const historyGraph = document.querySelector("[data-project-history-graph]");
   const projectFilter = document.querySelector("[data-project-filter]");
   const projectCount = document.querySelector("[data-project-count]");
   const projectEmpty = document.querySelector("[data-project-empty]");
+  const projectRows = new Map([...projectsList?.querySelectorAll(".project-row") || []]
+    .map(row => [Number(row.dataset.projectIndex), row]));
+  projectRows.forEach(row => row.querySelector(".project-title-button").setAttribute("aria-haspopup", "dialog"));
   const projectModal = document.getElementById("project-modal");
   const modalTitle = document.getElementById("project-modal-title");
   const modalTag = document.getElementById("project-modal-tag");
@@ -237,8 +244,8 @@
     typeCell.append(createElement("span", type === "unset" ? "project-unset" : "project-type-badge", projectTypes[type] || "—"));
 
     const nameCell = createElement("td", "project-name-cell");
-    const title = createElement("button", "project-title-button", project.title.trim());
-    title.type = "button";
+    const title = createElement("a", "project-title-button", project.title.trim());
+    title.href = window.AOT_CONTENT_URLS.project(project);
     title.setAttribute("aria-haspopup", "dialog");
     title.setAttribute("aria-label", "Open project: " + project.title.trim());
     nameCell.append(title);
@@ -381,17 +388,22 @@
     let count = 0;
     projects.forEach(function (project, index) {
       if (projectFilter && projectFilter.value !== "all" && project.type !== projectFilter.value) return;
-      projectsList.appendChild(createProjectItem(project, index));
+      if (!projectRows.has(index)) projectRows.set(index, createProjectItem(project, index));
+      projectsList.appendChild(projectRows.get(index));
       count++;
     });
     if (projectCount) projectCount.textContent = count + (count === 1 ? " project" : " projects");
-    if (projectEmpty) projectEmpty.hidden = count !== 0;
+    if (projectEmpty) {
+      projectEmpty.textContent = count ? "" : "No projects match this type.";
+      projectEmpty.hidden = count !== 0;
+    }
     drawHistoryGraph();
   }
 
   if (!projectsList || !projectModal || !modalCloseButton) return;
 
   renderProjects();
+  if (projectFilter) projectFilter.disabled = false;
   historyTable.projectEntrance = window.createProjectsEntrance?.(historyTable.closest("main"), historyTable);
   projectFilter?.addEventListener("change", renderProjects);
   if ("ResizeObserver" in window) new ResizeObserver(drawHistoryGraph).observe(historyTable);
@@ -418,9 +430,19 @@
   });
 
   projectsList.addEventListener("click", function (event) {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     const row = event.target.closest(".project-row");
     if (!row) return;
+    event.preventDefault();
     openProjectModal(projects[Number(row.dataset.projectIndex)], row.querySelector(".project-title-button"));
+  });
+  projectsList.addEventListener("keydown", function (event) {
+    if (event.key !== " " || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const title = event.target.closest(".project-title-button");
+    if (!title) return;
+    event.preventDefault();
+    const row = title.closest(".project-row");
+    openProjectModal(projects[Number(row.dataset.projectIndex)], title);
   });
 
   modalCloseButton.addEventListener("click", closeProjectModal);
