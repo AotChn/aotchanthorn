@@ -11,7 +11,7 @@
     pauseDuration: [2.8, 5.8],
     lookInterval: [.85, 1.35],
     strideLength: 28,
-    sound: { enabled: true, volume: .2 },
+    sound: { enabled: true, volume: .12 },
     modes: [
       { name: "walk", weight: .5, speed: [28, 52], acceleration: 65, braking: 110 },
       { name: "run", weight: .36, speed: [80, 130], acceleration: 150, braking: 210 },
@@ -24,7 +24,7 @@
   document.querySelectorAll("[data-horse-lane]").forEach(lane => {
     const sprite = lane.querySelector(".horse-sprite");
     if (!sprite) return;
-    const sound = window.createHorseHoofSound?.(settings.sound);
+    const sound = window.createHorseMovementSound?.(settings.sound);
     let x = 0, destination = 0, limit = 0, measured = false, direction = 1;
     let mode = null, speed = 0, cruiseSpeed = 0;
     let restTime = random(...settings.pauseDuration), lookTime = random(...settings.lookInterval);
@@ -48,6 +48,7 @@
       restTime = random(...settings.pauseDuration);
       lookTime = random(...settings.lookInterval);
       lane.dataset.horseState = "rest";
+      sound?.rest();
     }
 
     function measure() {
@@ -76,16 +77,12 @@
     }
 
     function stride(distance, dt) {
-      // Advance by ground covered, so feet and hoofbeats slow down together.
+      // One soft note per stride, with rhythm driven by ground covered.
       const progress = distance / (settings.strideLength + speed * .22);
       const end = phase + progress;
-      const contacts = speed < 65 ? [0, .25, .5, .75] : [.02, .18, .72, .86];
-      contacts.forEach((contact, index) => {
-        const next = Math.floor(phase - contact) + 1 + contact;
-        if (next <= end && speed > 5) {
-          sound?.hit(speed, [1, .65, .85, .6][index], (next - phase) / progress * dt);
-        }
-      });
+      if (end >= 1 && speed > 5) {
+        sound?.note(speed, limit > 0 ? x / limit : .5, (1 - phase) / progress * dt);
+      }
       phase = end % 1;
     }
 
