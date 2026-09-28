@@ -55,6 +55,23 @@ nav{
 .transitions-disabled .animations-toggle svg{fill:none}
 .animations-toggle:hover{color:var(--off)}
 .animations-toggle:focus-visible{outline:1px solid var(--sand);outline-offset:3px}
+.animations-control{position:relative;display:flex;align-items:center;flex-shrink:0;margin-right:auto}
+.animations-control .animations-toggle{margin-right:0}
+.animations-feedback{
+  position:absolute;
+  left:calc(100% + .5rem);
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--sand);
+  font-size:.7rem;
+  line-height:1.4;
+  letter-spacing:.06em;
+  white-space:nowrap;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .18s;
+}
+.animations-feedback.is-visible{opacity:1}
 
 .nav-actions{
   display:flex;
