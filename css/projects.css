@@ -14,8 +14,18 @@
 .project-history-graph path{fill:none;stroke-width:1.25;stroke-linecap:round;stroke-linejoin:round}
 .project-history-trunk{stroke:var(--history-unset);opacity:.55}
 .project-history-branch{stroke:var(--project-type-color);opacity:.8}
-.project-history-dot{fill:var(--bg);stroke:var(--project-type-color);stroke-width:1.75}
-.project-history-dot-core{fill:var(--project-type-color)}
+.project-history-dot{fill:var(--project-node-color);stroke:var(--project-node-color);stroke-width:1;filter:drop-shadow(0 0 4px var(--project-node-color))}
+.project-history-dot-core{fill:#eeeeee;opacity:.7}
+.project-history-halo{fill:none;stroke:var(--project-node-color);stroke-width:1;opacity:0;transform-origin:0 0;animation:project-node-glow 3.2s var(--project-pulse-delay,0s) ease-out infinite}
+@keyframes project-node-glow{0%{transform:scale(.8);opacity:.4}70%,100%{transform:scale(1.7);opacity:0}}
+.projects-entering .project-history-node,.projects-entering .project-history-graph path{opacity:0}
+.projects-entering .page-head,.projects-entering .project-history-toolbar,.projects-entering .project-table thead,
+.projects-entering .project-row,.projects-entering .page-tail,.projects-entering .page-footer{animation:none;visibility:hidden;opacity:0}
+.projects-entering.projects-revealing .page-head,.projects-entering.projects-revealing .project-history-toolbar,
+.projects-entering.projects-revealing .project-table thead,.projects-entering.projects-revealing .project-row,
+.projects-entering.projects-revealing .page-tail,.projects-entering.projects-revealing .page-footer{visibility:visible;opacity:var(--projects-reveal,0)}
+.projects-entering .project-table th,.projects-entering .project-row td,.projects-entering .project-row,.projects-entering .page-main{border-color:transparent}
+.projects-entering .project-history-halo,.project-glow-paused .project-history-halo{animation-play-state:paused}
 [data-project-type="work"]{--project-type-color:var(--history-work)}
 [data-project-type="personal"]{--project-type-color:var(--history-personal)}
 [data-project-type="school"]{--project-type-color:var(--history-school)}
@@ -82,4 +92,7 @@
   .project-mobile-label{display:block;margin-bottom:.35rem;font-size:.58rem;line-height:1.5;letter-spacing:.12em;text-transform:uppercase;color:var(--sand-dim)}
   .project-type-cell,.project-updated-cell{margin-top:.3rem}
   .project-type-badge,.project-updated,.project-unset{font-size:.78rem}
+}
+@media(prefers-reduced-motion:reduce){
+  .project-history-halo{animation:none;opacity:.15}
 }

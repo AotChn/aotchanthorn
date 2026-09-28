@@ -3,12 +3,14 @@
   // type: "work", "personal", or "school"; leave "" to show an em dash.
   // lastUpdated: "YYYY-MM-DD"; leave "" until a real project date is available.
   // function: short description in the history row. Full details stay in the popup.
+  // nodeColor: node fill and glow color (hex), using the home graph palette.
   // Timeline branches follow type; blank types stay on the main line.
   const projects = [
     {
       tag: "Locomotion · Robotics",
       title: "Robot Reinforcement Training",
       type: "",
+      nodeColor: "#a5c4f0",
       lastUpdated: "",
       function: "Train robot policies from video demonstrations.",
       displayTitleHtml: "Robot <em>Reinforcement</em> Training",
@@ -26,6 +28,7 @@
       tag: "Gradient Descent · Pokemon",
       title: "Voltorb Flip Machine Learning Solver",
       type: "",
+      nodeColor: "#c379ff",
       lastUpdated: "",
       function: "Optimize Voltorb Flip moves under uncertainty.",
       displayTitleHtml: "Voltorb Flip <em>Machine Learning</em> Solver",
@@ -43,6 +46,7 @@
       tag: "Neuroevolution · Neural Networks",
       title: "Evolution N.E.A.T Simulator",
       type: "",
+      nodeColor: "#5ce0de",
       lastUpdated: "",
       function: "Evolve neural network structures and weights.",
       displayTitleHtml: "Evolution <em>N.E.A.T</em> Simulator",
@@ -60,6 +64,7 @@
       tag: "",
       title: "Guppy AI Speech Trainer",
       type: "",
+      nodeColor: "#f6b7bd",
       lastUpdated: "",
       function: "AI-assisted speech training.",
       displayTitleHtml: "Guppy <em>AI</em> Speech Trainer",
@@ -77,6 +82,7 @@
       tag: "",
       title: "Navify Map Pathfinder ",
       type: "",
+      nodeColor: "#85f5b5",
       lastUpdated: "",
       function: "Find routes on a map.",
       displayTitleHtml: "Navify <em>Map</em> Pathfinder ",
@@ -94,6 +100,7 @@
       tag: "",
       title: "Chip8 Emulator",
       type: "",
+      nodeColor: "#ffc353",
       lastUpdated: "",
       function: "Emulate CHIP-8 programs.",
       displayTitleHtml: "Chip8 <em>Emulator</em>",
@@ -111,6 +118,7 @@
       tag: "",
       title: "SQL from Scratch",
       type: "",
+      nodeColor: "#ff7581",
       lastUpdated: "",
       function: "Run SQL queries in a custom C++ database engine.",
       displayTitleHtml: "<em>SQL</em> from scratch",
@@ -128,6 +136,7 @@
       tag: "",
       title: "Maze Mini Game",
       type: "",
+      nodeColor: "#fa70ff",
       lastUpdated: "",
       function: "Explore a maze in 2D and first person.",
       displayTitleHtml: "Maze Mini <em>Game<em>",
@@ -146,6 +155,7 @@
       tag: "",
       title: "Graphing Calculator App",
       type: "",
+      nodeColor: "#e4e890",
       lastUpdated: "",
       function: "Parse functions and plot interactive graphs.",
       displayTitleHtml: "Graphing Calculator",
@@ -241,7 +251,7 @@
     if (!historyGraph || !historyTable) return;
     historyGraph.replaceChildren();
     const rows = [...projectsList.querySelectorAll(".project-row")];
-    if (!rows.length) return;
+    if (!rows.length) { historyTable.projectEntrance?.refresh(); return; }
     const bounds = historyTable.getBoundingClientRect();
     const width = historyGraph.getBoundingClientRect().width;
     historyGraph.setAttribute("viewBox", "0 0 " + width + " " + bounds.height);
@@ -249,12 +259,15 @@
     const lanes = { unset: trunkX, work: width * .4, personal: width * .62, school: width * .84 };
     const points = rows.map(row => {
       const title = row.querySelector(".project-title-button").getBoundingClientRect();
-      return { type: row.dataset.projectType, y: title.top + title.height / 2 - bounds.top };
+      const project = projects[Number(row.dataset.projectIndex)];
+      return { type: row.dataset.projectType, color: project.nodeColor || "#a5c4f0", index: row.dataset.projectIndex,
+        y: title.top + title.height / 2 - bounds.top };
     });
-    function draw(tag, attributes) {
+    function draw(tag, attributes, parent = historyGraph) {
       const shape = document.createElementNS("http://www.w3.org/2000/svg", tag);
       Object.entries(attributes).forEach(([key, value]) => shape.setAttribute(key, value));
-      historyGraph.append(shape);
+      parent.append(shape);
+      return shape;
     }
     const top = Math.max(0, points[0].y - 22), bottom = Math.min(bounds.height, points.at(-1).y + 22);
     draw("path", { class: "project-history-trunk", d: `M${trunkX} ${top} V${bottom}` });
@@ -267,10 +280,17 @@
         d: `M${trunkX} ${start - 22} C${trunkX} ${start - 10} ${x} ${start - 12} ${x} ${start} V${end} C${x} ${end + 12} ${trunkX} ${end + 10} ${trunkX} ${end + 22}`
       });
     });
-    points.forEach(point => {
-      draw("circle", { class: "project-history-dot", "data-project-type": point.type, cx: lanes[point.type], cy: point.y, r: 4 });
-      draw("circle", { class: "project-history-dot-core", "data-project-type": point.type, cx: lanes[point.type], cy: point.y, r: 1.3 });
+    points.forEach((point, index) => {
+      const x = lanes[point.type];
+      const node = draw("g", { class: "project-history-node", transform: `translate(${x} ${point.y})`,
+        "data-node-x": x, "data-node-y": point.y, "data-project-index": point.index });
+      node.style.setProperty("--project-node-color", point.color);
+      node.style.setProperty("--project-pulse-delay", (-index * .4) + "s");
+      draw("circle", { class: "project-history-halo", r: 8 }, node);
+      draw("circle", { class: "project-history-dot", r: 5 }, node);
+      draw("circle", { class: "project-history-dot-core", r: 1.3 }, node);
     });
+    historyTable.projectEntrance?.refresh();
   }
 
   function createMediaNode(item) {
@@ -355,6 +375,7 @@
   if (!projectsList || !projectModal || !modalCloseButton) return;
 
   renderProjects();
+  historyTable.projectEntrance = window.createProjectsEntrance?.(historyTable.closest("main"), historyTable);
   projectFilter?.addEventListener("change", renderProjects);
   if ("ResizeObserver" in window) new ResizeObserver(drawHistoryGraph).observe(historyTable);
   else window.addEventListener("resize", drawHistoryGraph);

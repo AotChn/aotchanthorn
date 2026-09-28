@@ -76,6 +76,7 @@
   }
 
   function start(url, label) {
+    history.projectEntrance?.finish();
     destination = url;
     const width = window.innerWidth, height = window.innerHeight;
     const sink = { x: width * .5, y: height * .48 };
@@ -85,8 +86,10 @@
       const dot = dots[index];
       if (!dot) return null;
       const bounds = dot.getBoundingClientRect();
+      const style = getComputedStyle(dot);
       return { row, x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2,
-        radius: Math.max(2, bounds.width / 2), color: getComputedStyle(dot).stroke };
+        radius: Math.max(2, bounds.width / 2), color: style.stroke, fill: style.fill,
+        strokeWidth: style.strokeWidth, glow: style.filter };
     }).filter(Boolean);
     // With an empty filter there is no real node to lead the transition.
     if (!nodes.length) { navigate(); return; }
@@ -143,8 +146,9 @@
         textViews.push({ element: copy, delay: Math.min(index, 8) * rowStagger,
           dx: node.x - bounds.left - bounds.width / 2, dy: node.y - bounds.top - bounds.height / 2 });
       });
-      node.circle = svgElement("circle", { cx: node.x, cy: node.y, r: node.radius, fill: "#000", stroke: node.color, "stroke-width": "1.75" });
-      node.center = svgElement("circle", { cx: node.x, cy: node.y, r: "1.3", fill: node.color });
+      node.circle = svgElement("circle", { cx: node.x, cy: node.y, r: node.radius, fill: node.fill, stroke: node.color, "stroke-width": node.strokeWidth });
+      node.circle.style.filter = node.glow;
+      node.center = svgElement("circle", { cx: node.x, cy: node.y, r: "1.3", fill: "#eeeeee", "fill-opacity": ".7" });
       scene.append(node.circle, node.center);
     });
     // Keep the first row's actual dot visible throughout; it becomes the core.
@@ -205,7 +209,7 @@
       const merged = nodes.length > 1 ? absorbed / (nodes.length - 1) : clamp(departure / leadDuration);
       const intakePulse = elapsed < textEnd ? Math.sin(clamp(elapsed / textDuration) * Math.PI) * 2 : 0;
       core.setAttribute("r", String(lead.radius + intakePulse + 7 * merged + 3 * Math.sin(charge * Math.PI)));
-      core.style.filter = `drop-shadow(0 0 ${merged * 10}px ${waveColor})`;
+      core.style.filter = `drop-shadow(0 0 ${4 + merged * 10}px ${lead.color})`;
       lead.center.setAttribute("r", String(1.3 + merged * 2.5));
       ring.setAttribute("cx", leadPosition.x);
       ring.setAttribute("cy", leadPosition.y);
