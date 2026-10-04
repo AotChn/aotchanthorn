@@ -16,8 +16,11 @@
 .project-history-branch{stroke:var(--project-type-color);opacity:.8}
 .project-history-dot{fill:var(--project-node-color);stroke:var(--project-node-color);stroke-width:1;filter:drop-shadow(0 0 4px var(--project-node-color))}
 .project-history-dot-core{fill:#eeeeee;opacity:.7}
+.project-history-node.is-highlighted{--project-glow-opacity:.7}
+.project-history-node.is-highlighted .project-history-dot{stroke-width:1.5;filter:drop-shadow(0 0 7px var(--project-node-color))}
+.project-history-node.is-highlighted .project-history-dot-core{fill:#fff;opacity:1}
 .project-history-halo{fill:none;stroke:var(--project-node-color);stroke-width:1;opacity:0;transform-origin:0 0;animation:project-node-glow 3.2s var(--project-pulse-delay,0s) ease-out infinite}
-@keyframes project-node-glow{0%{transform:scale(.8);opacity:.4}70%,100%{transform:scale(1.7);opacity:0}}
+@keyframes project-node-glow{0%{transform:scale(.8);opacity:var(--project-glow-opacity,.4)}70%,100%{transform:scale(1.7);opacity:0}}
 .projects-entering .project-history-node,.projects-entering .project-history-graph path{opacity:0}
 .projects-entering .page-head,.projects-entering .project-history-toolbar,.projects-entering .project-table thead,
 .projects-entering .project-row,.projects-entering .page-tail,.projects-entering .page-footer{animation:none;visibility:hidden;opacity:0}

@@ -212,7 +212,7 @@
 
   let lastProjectTrigger = null;
   let hoveredProject = null, focusedProject = null, selectedProject = null;
-  const highlightColor = "#85f5b5";
+  const highlightColor = "#a4ffcb";
   const projectTypes = { work: "Work", personal: "Personal", school: "School" };
   const dateFormatter = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
@@ -227,6 +227,7 @@
     const highlighted = selectedProject ?? hoveredProject ?? focusedProject;
     historyGraph?.querySelectorAll(".project-history-node").forEach(node => {
       const index = node.dataset.projectIndex;
+      node.classList.toggle("is-highlighted", index === highlighted);
       node.style.setProperty("--project-node-color", index === highlighted
         ? highlightColor : projects[Number(index)].nodeColor || "#eeeeee");
     });
