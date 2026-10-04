@@ -140,6 +140,7 @@
       video.controls = true;
       video.playsInline = true;
       video.preload = "metadata";
+      window.AOT_AUDIO?.trackMedia(video);
 
       if (item.poster) video.poster = item.poster;
 

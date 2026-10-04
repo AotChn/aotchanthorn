@@ -320,6 +320,7 @@
       video.controls = true;
       video.playsInline = true;
       video.preload = "metadata";
+      window.AOT_AUDIO?.trackMedia(video);
 
       const source = document.createElement("source");
       source.src = item.src;

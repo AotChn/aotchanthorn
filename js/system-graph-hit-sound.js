@@ -16,7 +16,7 @@
 
     // Browsers require an interaction before audio can play. Hover never unlocks it.
     function unlock() {
-      if (!active || document.hidden || settings.enabled === false || volume === 0) return;
+      if (!active || document.hidden || window.AOT_AUDIO?.enabled === false || settings.enabled === false || volume === 0) return;
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return;
       try {
@@ -38,7 +38,7 @@
           output.connect(filter);
           filter.connect(compressor);
           compressor.connect(master);
-          master.connect(audio.destination);
+          master.connect(window.AOT_AUDIO?.output(audio) || audio.destination);
         }
         if (audio.state === "suspended") audio.resume().catch(() => {});
       } catch {
@@ -68,7 +68,7 @@
     }
 
     function hit(node) {
-      if (!active || document.hidden || settings.enabled === false || !audio || audio.state !== "running" || !output) return;
+      if (!active || document.hidden || window.AOT_AUDIO?.enabled === false || settings.enabled === false || !audio || audio.state !== "running" || !output) return;
       // A new hit always gets a clunk; retire the oldest tail during busy bursts.
       if (voices.size >= 12) stop(voices.values().next().value);
       const voice = { oscillators: [], gains: [], remaining: 2, released: false };
@@ -106,6 +106,10 @@
     }
 
     window.addEventListener("pagehide", () => setActive(false));
+    window.AOT_AUDIO?.subscribe(enabled => {
+      if (enabled) unlock();
+      else voices.forEach(stop);
+    });
 
     // Selection calls unlock within the node/edge click or keyboard gesture.
     return { hit, setActive, unlock };

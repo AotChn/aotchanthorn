@@ -1,5 +1,5 @@
 /* Native navigation and readable content remain available without JavaScript. */
-.animations-control,.animations-toggle,.nav-toggle{display:none!important}
+.animations-control,.animations-toggle,.volume-toggle,.nav-toggle{display:none!important}
 nav{height:auto;min-height:4rem}
 nav .nav-actions{display:flex!important;position:static;width:auto;flex-wrap:wrap;justify-content:flex-end;background:none;border:0;box-shadow:none;padding:0;gap:.5rem}
 nav .nav-actions .clink{width:auto}

@@ -36,7 +36,7 @@
     // Called only by node activation, so audio starts within a user gesture.
     // One shared context and noise buffer keep the sound lightweight and local.
     function enableSound() {
-      if (settings.soundEnabled === false || volume === 0 || reducedMotion.matches) return;
+      if (window.AOT_AUDIO?.enabled === false || settings.soundEnabled === false || volume === 0 || reducedMotion.matches) return;
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return;
       try {
@@ -56,7 +56,7 @@
     }
 
     function typeSound(character) {
-      if (!soundEnabled || !audio || audio.state !== "running" || !keyBuffer || /\s/u.test(character) || document.hidden || !visible) return;
+      if (window.AOT_AUDIO?.enabled === false || !soundEnabled || !audio || audio.state !== "running" || !keyBuffer || /\s/u.test(character) || document.hidden || !visible) return;
       try {
         const source = audio.createBufferSource();
         const filter = audio.createBiquadFilter();
@@ -71,7 +71,7 @@
         gain.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.025);
         source.connect(filter);
         filter.connect(gain);
-        gain.connect(audio.destination);
+        gain.connect(window.AOT_AUDIO?.output(audio) || audio.destination);
         source.onended = () => {
           sounds.delete(source);
           source.disconnect();
@@ -170,6 +170,10 @@
       stopSounds();
     });
     window.addEventListener("pageshow", syncVisibility);
+    window.AOT_AUDIO?.subscribe(enabled => {
+      if (!enabled) stopSounds();
+      else if (soundEnabled && !completed && visible && !document.hidden) enableSound();
+    });
 
     return { show, clear, finish };
   };

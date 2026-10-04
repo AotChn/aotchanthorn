@@ -36,7 +36,7 @@
     function start(milliseconds) {
       stop();
       popped = false;
-      if (settings.soundEnabled === false || (!windVolume && !popVolume) || document.hidden) return;
+      if (window.AOT_AUDIO?.enabled === false || settings.soundEnabled === false || (!windVolume && !popVolume) || document.hidden) return;
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return;
       try {
@@ -48,7 +48,7 @@
         compressor.attack.value = 0.003;
         compressor.release.value = 0.1;
         output = compressor;
-        output.connect(audio.destination);
+        output.connect(window.AOT_AUDIO?.output(audio) || audio.destination);
         if (audio.state === "suspended") audio.resume().catch(() => {});
 
         noise = audio.createBuffer(1, Math.ceil(audio.sampleRate * 2), audio.sampleRate);
@@ -93,7 +93,7 @@
     }
 
     function pop() {
-      if (popped || document.hidden || !audio || audio.state !== "running" || !output) return 0;
+      if (popped || document.hidden || window.AOT_AUDIO?.enabled === false || !audio || audio.state !== "running" || !output) return 0;
       popped = true;
       if (wind) {
         try { wind.source.stop(); } catch { /* Wind has already faded. */ }

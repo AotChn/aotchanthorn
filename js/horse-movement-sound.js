@@ -43,7 +43,7 @@
     }
 
     function syncPlayback() {
-      if (!active || document.hidden || speed <= 3 || !audio || audio.state !== "running") {
+      if (window.AOT_AUDIO?.enabled === false || !active || document.hidden || speed <= 3 || !audio || audio.state !== "running") {
         silence();
         return;
       }
@@ -63,7 +63,7 @@
           source.playbackRate.value = rate;
           gain.gain.value = 0;
           source.connect(gain);
-          gain.connect(audio.destination);
+          gain.connect(window.AOT_AUDIO?.output(audio) || audio.destination);
           const current = { source, gain, fading: false };
           voice = current;
           voices.add(current);
@@ -107,7 +107,7 @@
 
     // Browsers require a click, tap, or keyboard activation before audio plays.
     function unlock() {
-      if (!active || document.hidden || settings.enabled === false || !volume) return;
+      if (window.AOT_AUDIO?.enabled === false || !active || document.hidden || settings.enabled === false || !volume) return;
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return;
       try {
@@ -135,6 +135,10 @@
       if (!event.repeat && (event.key === "Enter" || event.key === " ")) unlock();
     });
     window.addEventListener("pagehide", close);
+    window.AOT_AUDIO?.subscribe(enabled => {
+      if (enabled) unlock();
+      else silence(0);
+    });
     return { update, setActive, rest() { speed = stridesPerSecond = 0; silence(); } };
   };
 })();

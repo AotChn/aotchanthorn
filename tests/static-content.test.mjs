@@ -63,6 +63,9 @@ test("all generated same-site entry/archive links and canonical pages resolve", 
   const pages = readdirSync(join(output, "html"), { recursive: true }).filter(file => file.endsWith(".html"));
   for (const page of pages) {
     const html = read("html/" + page);
+    assert(html.includes('class="volume-toggle"'), `${page} needs the sound toggle`);
+    assert(html.includes('js/audio-preferences.js'), `${page} needs sound preferences`);
+    assert(html.indexOf('js/audio-preferences.js') < html.indexOf('js/nav.js'), `${page} must load sound preferences before navigation`);
     for (const [, href] of html.matchAll(/href="([^"]+)"/g)) {
       const url = new URL(href.replaceAll("&amp;", "&"), "https://aotchn.com/html/" + page);
       if (url.origin !== "https://aotchn.com" || !url.pathname.endsWith(".html")) continue;

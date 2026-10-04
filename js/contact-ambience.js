@@ -13,11 +13,12 @@
   birds.loop = true;
   birds.preload = "none";
   birds.volume = Math.max(0, Math.min(1, settings.volume));
+  window.AOT_AUDIO?.trackMedia(birds, true);
   let pageActive = true;
 
   function canPlay() {
     const page = document.documentElement;
-    return pageActive && !document.hidden &&
+    return window.AOT_AUDIO?.enabled !== false && pageActive && !document.hidden &&
       !page.classList.contains("home-returning") &&
       !page.classList.contains("page-wave-reveal") &&
       !page.classList.contains("horse-exiting");
@@ -36,6 +37,7 @@
   }
 
   document.addEventListener("click", sync);
+  window.AOT_AUDIO?.subscribe(sync);
   document.addEventListener("keydown", event => {
     if (!event.repeat && (event.key === "Enter" || event.key === " ")) sync();
   });

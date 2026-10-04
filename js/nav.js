@@ -3,6 +3,7 @@
   const toggle = document.querySelector(".nav-toggle");
   const navActions = document.querySelector(".nav-actions");
   const animationsToggle = document.querySelector(".animations-toggle");
+  const volumeToggle = document.querySelector(".volume-toggle");
 
   if (animationsToggle && window.AOT_ANIMATIONS) {
     const control = document.createElement("div");
@@ -13,12 +14,21 @@
     feedback.setAttribute("aria-live", "polite");
     feedback.setAttribute("aria-atomic", "true");
     animationsToggle.before(control);
-    control.append(animationsToggle, feedback);
+    control.append(animationsToggle);
+    if (volumeToggle) control.append(volumeToggle);
+    control.append(feedback);
     let feedbackTimer;
 
     function hideFeedback() {
       clearTimeout(feedbackTimer);
       feedback.classList.remove("is-visible");
+    }
+
+    function showFeedback(message) {
+      clearTimeout(feedbackTimer);
+      feedback.textContent = message;
+      feedback.classList.add("is-visible");
+      feedbackTimer = setTimeout(hideFeedback, 1500);
     }
 
     function updateAnimationsToggle(enabled) {
@@ -27,11 +37,20 @@
     }
     animationsToggle.addEventListener("click", () => {
       window.AOT_ANIMATIONS.setEnabled(!window.AOT_ANIMATIONS.enabled);
-      clearTimeout(feedbackTimer);
-      feedback.textContent = window.AOT_ANIMATIONS.enabled ? "animations on" : "animations off";
-      feedback.classList.add("is-visible");
-      feedbackTimer = setTimeout(hideFeedback, 1500);
+      showFeedback(window.AOT_ANIMATIONS.enabled ? "animations on" : "animations off");
     });
+    if (volumeToggle && window.AOT_AUDIO) {
+      const updateVolumeToggle = enabled => {
+        volumeToggle.setAttribute("aria-pressed", String(enabled));
+        volumeToggle.setAttribute("title", enabled ? "Mute site sounds" : "Unmute site sounds");
+      };
+      volumeToggle.addEventListener("click", () => {
+        window.AOT_AUDIO.setEnabled(!window.AOT_AUDIO.enabled);
+        showFeedback(window.AOT_AUDIO.enabled ? "sound on" : "sound off");
+      });
+      window.AOT_AUDIO.subscribe(updateVolumeToggle);
+      updateVolumeToggle(window.AOT_AUDIO.enabled);
+    }
     window.addEventListener("pagehide", hideFeedback);
     window.addEventListener("pageshow", hideFeedback);
     window.AOT_ANIMATIONS.subscribe(updateAnimationsToggle);
