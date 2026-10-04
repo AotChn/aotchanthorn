@@ -9,7 +9,7 @@
     {
       tag: "Locomotion · Robotics",
       title: "Robot Reinforcement Training",
-      type: "",
+      type: "personal",
       nodeColor: "#eeeeee",
       lastUpdated: "",
       function: "Train robot policies from video demonstrations.",
