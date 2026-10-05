@@ -6,18 +6,19 @@ const site = "https://aotchn.com";
 export const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g,
   character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
 const text = escapeHTML;
-const types = { work: "Work", personal: "Personal", school: "School" };
+const types = { work: "Professional", personal: "Personal", school: "School", competition: "Competition" };
 const dateFormat = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
 export function loadContent(root) {
   // These are our own data files. Their build-only early return avoids DOM work;
   // browser rendering and generated HTML always consume the same owner entries.
   const window = {};
-  for (const file of ["content-urls.js", "projects.js", "life-updates.js", "system-graph-config.js"]) {
+  for (const file of ["content-urls.js", "project-sort.js", "projects.js", "life-updates.js", "system-graph-config.js"]) {
     runInNewContext(readFileSync(join(root, "js", file), "utf8"), { window }, { filename: file, timeout: 2000 });
   }
   const content = { projects: window.AOT_PROJECTS, memos: window.AOT_LIFE_UPDATES,
-    graph: window.AOT_SYSTEM_GRAPH, pageSize: window.AOT_MEMO_PAGE_SIZE, urls: window.AOT_CONTENT_URLS };
+    graph: window.AOT_SYSTEM_GRAPH, pageSize: window.AOT_MEMO_PAGE_SIZE, urls: window.AOT_CONTENT_URLS,
+    sortProjects: window.AOT_SORT_PROJECTS, isProjectLocked: window.AOT_IS_PROJECT_LOCKED };
   validateContent(content);
   return content;
 }
@@ -46,10 +47,11 @@ function region(html, name, value) {
 }
 
 function dateMarkup(value) {
-  const date = /^\d{4}-\d{2}-\d{2}$/.test(value || "") ? new Date(value + "T00:00:00Z") : null;
-  return date && !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
-    ? `<time class="project-updated" datetime="${text(value)}">${text(dateFormat.format(date))}</time>`
-    : '<span class="project-updated">—</span>';
+  const dateText = String(value ?? "").trim();
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(dateText) ? new Date(dateText + "T00:00:00Z") : null;
+  return date && !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === dateText
+    ? `<time class="project-updated" datetime="${text(dateText)}">${text(dateFormat.format(date))}</time>`
+    : `<span class="project-updated">${text(dateText || "—")}</span>`;
 }
 
 export function renderProjectRow(project, index, urls) {
@@ -63,10 +65,20 @@ export function renderProjectRow(project, index, urls) {
   </tr>`;
 }
 
+function memoImage(item) {
+  if (!item) return "";
+  return `<figure class="memo-card-image${item.wordmark ? " memo-card-image-wordmark" : ""}">
+    <img src="${text(assetURL(item.src))}" alt="${text(item.alt)}" loading="lazy" decoding="async">
+    ${item.wordmark ? `<div class="memo-card-wordmark"><span class="memo-card-wordmark-name">${text(item.wordmark)}</span>${item.subtitle ? `<span class="memo-card-wordmark-subtitle">${text(item.subtitle)}</span>` : ""}</div>` : ""}
+  </figure>`;
+}
+
 function memoCard(memo, urls) {
-  return `<a class="update-card" id="${text(memo.slug)}" data-update-slug="${text(memo.slug)}" href="${text(urls.memo(memo))}">
+  const cardImage = memo.cardImage || memo.media?.find(item => item.type === "image" && item.cardPosition);
+  return `<a class="update-card"${cardImage?.cardPosition === "right" ? ' data-image-position="right"' : ""} id="${text(memo.slug)}" data-update-slug="${text(memo.slug)}" href="${text(urls.memo(memo))}">
     <div class="update-card-meta">${text(memo.label)}</div>
     <h2 class="update-card-title">${text(memo.title)}</h2>
+    ${memoImage(cardImage)}
     <p class="update-card-copy">${text(memo.summary)}</p>
   </a>`;
 }
@@ -127,7 +139,7 @@ function metadata(title, description, path, image) {
 ${image ? `<meta property="og:image" content="${text(new URL(assetURL(image), site).href)}">` : ""}`;
 }
 
-function entryPage(entry, kind, path, template) {
+function entryPage(entry, kind, path, template, locked = false) {
   const projects = kind === "project";
   const summary = entry.summary || entry.description || "";
   const stack = entry.stack && entry.stack !== "$%^" ? entry.stack : (entry.chips || []).join(" · ");
@@ -139,21 +151,29 @@ function entryPage(entry, kind, path, template) {
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${text(entry.title)} — Aot Chanthorn</title>
-${metadata(entry.title + " — Aot Chanthorn", summary, path, entry.media?.find(item => item.type === "image")?.src)}
+${metadata(entry.title + " — Aot Chanthorn", locked ? "Project details are locked." : summary, path, locked ? undefined : entry.media?.find(item => item.type === "image")?.src)}
 ${fonts}
 <link rel="stylesheet" href="/css/portfolio.css"><link rel="stylesheet" href="/css/content-pages.css">
 <noscript><link rel="stylesheet" href="/css/no-script.css"></noscript>
 <script src="/js/ga4.js"></script><script src="/js/animation-preferences.js"></script><script src="/js/audio-preferences.js"></script>
 </head><body>
 ${nav}
-<main class="page-shell page-main content-page"><article>
-  <p class="update-card-meta">${text(projects ? entry.tag : entry.label)}</p>
+<main class="page-shell page-main content-page"><article${locked ? ` aria-label="${text(entry.title.trim())} — details locked"` : ""}>
+  ${locked ? `<div class="project-lock">
+    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Details locked" focusable="false">
+      <rect x="10" y="21" width="28" height="22" rx="4"/>
+      <path d="M16 21v-8a8 8 0 0 1 16 0v8"/>
+      <circle cx="24" cy="31" r="2"/><path d="M24 33v3"/>
+    </svg>
+    <label class="project-access-label" for="project-access-code">access code required</label>
+    <input class="project-access-input" id="project-access-code" type="text" placeholder="Enter access code" autocomplete="off" autocapitalize="none" spellcheck="false">
+  </div>` : `<p class="update-card-meta">${text(projects ? entry.tag : entry.label)}</p>
   <h1 class="page-title">${text(entry.title)}</h1>
   ${projects && entry.lastUpdated ? `<p class="content-date">Last updated: ${dateMarkup(entry.lastUpdated)}</p>` : ""}
   ${projects && types[entry.type] ? `<p class="content-date">${types[entry.type]} project</p>` : ""}
   <div class="content-copy">${projects && entry.function && entry.function !== summary ? paragraph(entry.function) : ""}${paragraph(summary)}${paragraph(entry.details)}</div>
-  <div class="content-media">${mediaHTML(entry.media)}</div>
-  ${projects && stack ? `<p class="content-stack">${text(stack)}</p>` : ""}
+  <div class="content-media">${projects ? "" : memoImage(entry.cardImage)}${mediaHTML(entry.media)}</div>
+  ${projects && stack ? `<p class="content-stack">${text(stack)}</p>` : ""}`}
   <div class="page-tail"><a class="clink" href="/html/${projects ? "work.html" : "writing.html#" + text(entry.slug)}">Back to ${projects ? "Projects" : "Memos"}</a></div>
 </article></main>
 ${footer}
@@ -163,7 +183,7 @@ ${footer}
 
 export function renderContent(root, output, content = loadContent(root)) {
   validateContent(content);
-  const { projects, memos, graph, urls, pageSize } = content;
+  const { projects, memos, graph, urls, pageSize, sortProjects, isProjectLocked } = content;
   const paths = ["/html/portfolio.html", "/html/about.html", "/html/work.html", "/html/writing.html", "/html/contact.html"];
   const read = name => readFileSync(join(root, "html", name), "utf8");
   const write = (path, html) => {
@@ -180,7 +200,7 @@ export function renderContent(root, output, content = loadContent(root)) {
   home = region(home, "graph-notes", graphNotes);
   write("html/portfolio.html", prepare(home, "Aot Chanthorn", "Aot Chanthorn's projects, memos, and interactive core architecture.", "/html/portfolio.html"));
   const workTemplate = read("work.html");
-  const work = region(region(workTemplate, "projects", projects.map((project, index) => renderProjectRow(project, index, urls)).join("\n")),
+  const work = region(region(workTemplate, "projects", sortProjects(projects).map(({ project, index }) => renderProjectRow(project, index, urls)).join("\n")),
     "project-count", projects.length + (projects.length === 1 ? " project" : " projects"));
   write("html/work.html", prepare(work, "Projects — Aot Chanthorn", "Projects in robotics, machine learning, simulation, and software by Aot Chanthorn.", "/html/work.html"));
   const memoTemplate = read("writing.html");
@@ -203,7 +223,7 @@ export function renderContent(root, output, content = loadContent(root)) {
     for (const entry of entries) {
       const path = "/html/" + urls[kind](entry);
       paths.push(path);
-      write(path, entryPage(entry, kind, path, template));
+      write(path, entryPage(entry, kind, path, template, kind === "project" && isProjectLocked(entry)));
     }
   }
   for (const page of ["about.html", "contact.html"]) {

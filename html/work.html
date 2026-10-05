@@ -52,15 +52,25 @@
 
   <section class="project-history" aria-label="Project history">
     <div class="project-history-toolbar">
-      <label class="project-view-filter">
-        <span class="project-visually-hidden">Filter projects by type</span>
-        <select data-project-filter disabled>
-          <option value="all">All projects</option>
-          <option value="work">Work</option>
-          <option value="personal">Personal</option>
-          <option value="school">School</option>
-        </select>
-      </label>
+      <div class="project-history-controls">
+        <label class="project-view-filter">
+          <span class="project-visually-hidden">Filter projects by type</span>
+          <select data-project-filter disabled>
+            <option value="all">All projects</option>
+            <option value="work">Professional</option>
+            <option value="personal">Personal</option>
+            <option value="school">School</option>
+            <option value="competition">Competition</option>
+          </select>
+        </label>
+        <label class="project-view-filter">
+          <span class="project-visually-hidden">Sort projects by date</span>
+          <select data-project-sort disabled>
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </label>
+      </div>
       <span class="project-count" data-project-count role="status"><!-- static:project-count --><!-- /static:project-count --></span>
     </div>
     <div class="project-history-table" data-project-history>
@@ -99,12 +109,23 @@
   <div class="project-modal-backdrop" data-close-modal="true"></div>
   <div class="project-modal-card" role="dialog" aria-modal="true" aria-labelledby="project-modal-title">
     <button class="project-modal-close" type="button" aria-label="Close project popup">&times;</button>
-    <div class="project-modal-tag" id="project-modal-tag"></div>
-    <h2 class="project-modal-title" id="project-modal-title"></h2>
-    <p class="project-modal-summary" id="project-modal-summary"></p>
-    <div class="project-modal-media" id="project-modal-media" hidden></div>
-    <p class="project-modal-details" id="project-modal-details"></p>
-    <div class="project-modal-stack" id="project-modal-stack"></div>
+    <div class="project-lock" id="project-modal-lock" hidden>
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Details locked" focusable="false">
+        <rect x="10" y="21" width="28" height="22" rx="4"/>
+        <path d="M16 21v-8a8 8 0 0 1 16 0v8"/>
+        <circle cx="24" cy="31" r="2"/><path d="M24 33v3"/>
+      </svg>
+      <label class="project-access-label" for="project-access-code">access code required</label>
+      <input class="project-access-input" id="project-access-code" type="text" placeholder="Enter access code" autocomplete="off" autocapitalize="none" spellcheck="false">
+    </div>
+    <div id="project-modal-content">
+      <div class="project-modal-tag" id="project-modal-tag"></div>
+      <h2 class="project-modal-title" id="project-modal-title"></h2>
+      <p class="project-modal-summary" id="project-modal-summary"></p>
+      <div class="project-modal-media" id="project-modal-media" hidden></div>
+      <p class="project-modal-details" id="project-modal-details"></p>
+      <div class="project-modal-stack" id="project-modal-stack"></div>
+    </div>
   </div>
 </div>
 
@@ -115,6 +136,7 @@
 
 <script src="../js/system-graph-config.js"></script>
 <script src="../js/content-urls.js"></script>
+<script src="../js/project-sort.js"></script>
 <script src="../js/projects.js"></script>
 <script src="../js/nav.js"></script>
 <script src="../js/system-graph-transition-sound.js"></script>

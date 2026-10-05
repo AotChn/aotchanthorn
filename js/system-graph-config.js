@@ -163,7 +163,7 @@ window.AOT_SYSTEM_GRAPH = {
     },
     {
       id: "product", label: "Product",
-      note: "A finished output that can feed resources back into the system.",
+      note: "A project worthy of consumption.",
       color: "#eeeeee", outputColor: "#c8d1e4",
       interval: 10, phase: 4.2,
       x: 1190, y: 153

@@ -25,8 +25,13 @@ test("initial HTML contains every project, first-page memo, pinned memo, and gra
     assert(work.includes(escapeHTML(project.title.trim())));
     assert(work.includes(`href="${original.urls.project(project)}"`));
     const entry = read("html/" + original.urls.project(project));
-    assert(entry.includes(escapeHTML(project.summary || project.description || "")));
-    assert(entry.includes(escapeHTML(project.details || "")));
+    if (original.isProjectLocked(project)) {
+      assert(entry.includes('aria-label="Details locked"'));
+      assert(!entry.includes('class="content-copy"'));
+    } else {
+      assert(entry.includes(escapeHTML(project.summary || project.description || "")));
+      assert(entry.includes(escapeHTML(project.details || "")));
+    }
   }
   for (const memo of original.memos.slice(0, original.pageSize)) assert(memos.includes(escapeHTML(memo.summary)));
   for (const memo of original.memos.filter(memo => memo.pinned)) assert(home.includes(escapeHTML(memo.title)));
@@ -39,6 +44,33 @@ test("initial HTML contains every project, first-page memo, pinned memo, and gra
   assert.equal((home.match(/class="system-node-body"/g) || []).length, original.graph.nodes.length);
   assert(!home.includes("Enable JavaScript to explore"));
   assert(!work.includes("No projects match this type."));
+});
+
+test("locked types and individual locks replace standalone details and media with a lock", t => {
+  const content = fixture();
+  content.projects = [
+    { title: "Professional example", type: "work" },
+    { title: "Individual example", type: "personal", locked: true },
+    { title: "Unlocked example", type: "competition" }
+  ].map(project => ({ ...project, function: "Public row description", summary: "Detail summary marker",
+    details: "Full details marker", stack: "Stack marker", tag: "Tag marker",
+    media: [{ type: "image", src: "../assets/detail-image-marker.png" },
+      { type: "video", src: "../assets/detail-video-marker.mp4" }] }));
+  assert(original.projects.filter(project => project.type === "work").every(original.isProjectLocked));
+  assert.equal(original.isProjectLocked({ type: "work", locked: false }), true);
+  for (const type of ["personal", "school", "competition", ""]) {
+    assert.equal(original.isProjectLocked({ type }), false);
+    assert.equal(original.isProjectLocked({ type, locked: true }), true);
+  }
+  const { read } = render(t, content);
+  const markers = ["Detail summary marker", "Full details marker", "Stack marker", "Tag marker", "detail-image-marker", "detail-video-marker"];
+  for (const project of content.projects) {
+    const page = read("html/" + content.urls.project(project));
+    const locked = content.isProjectLocked(project);
+    assert.equal(page.includes('aria-label="Details locked"'), locked);
+    for (const marker of markers) assert.equal(page.includes(marker), !locked, `${project.title}: ${marker}`);
+  }
+  assert(read("html/work.html").includes("Public row description"));
 });
 
 test("older memos have crawlable archive pages and full standalone content", t => {
@@ -90,6 +122,41 @@ test("owner text is escaped, local media works on nested pages, dates stay truth
   assert(page.includes('alt="A &quot;robot&quot;"'));
   assert(!page.includes('datetime="2026-02-30"'));
   assert(page.includes("C++ · A&amp;B"));
+});
+
+test("project dates preserve month-only text and format exact dates in lists and detail pages", t => {
+  const content = fixture();
+  const dates = [
+    ["July 2026", '<span class="project-updated">July 2026</span>'],
+    [" 2026-07-15 ", '<time class="project-updated" datetime="2026-07-15">Jul 15, 2026</time>'],
+    ["", '<span class="project-updated">—</span>'],
+    ["July <2026>", '<span class="project-updated">July &lt;2026&gt;</span>']
+  ];
+  content.projects = dates.map(([lastUpdated], index) => ({ title: `Date example ${index}`, lastUpdated }));
+  const { read } = render(t, content);
+  const list = read("html/work.html");
+  dates.forEach(([value, markup], index) => {
+    assert(list.includes(markup));
+    const page = read(`html/projects/date-example-${index}.html`);
+    if (value) assert(page.includes(`Last updated: ${markup}`));
+    else assert(!page.includes("Last updated:"));
+  });
+});
+
+test("initial projects are newest first while keeping original row identities", t => {
+  const content = fixture();
+  content.projects = [
+    { title: "Older project", lastUpdated: "2024" },
+    { title: "Newest project", lastUpdated: "September 2026" },
+    { title: "Middle project", lastUpdated: "July 2026" }
+  ];
+  const { read } = render(t, content);
+  const html = read("html/work.html");
+  assert.deepEqual([...html.matchAll(/data-project-index="(\d+)"/g)].map(match => Number(match[1])), [1, 2, 0]);
+  assert(html.indexOf("Newest project</a>") < html.indexOf("Middle project</a>"));
+  assert(html.indexOf("Middle project</a>") < html.indexOf("Older project</a>"));
+  assert(html.indexOf('src="../js/project-sort.js"') < html.indexOf('src="../js/projects.js"'));
+  assert(html.includes('data-project-sort disabled'));
 });
 
 test("bad or duplicate entry URLs fail the build instead of overwriting pages", () => {

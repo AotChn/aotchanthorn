@@ -1,16 +1,39 @@
 (function () {
   // Set `pinned: true` on any memo you want to surface on the homepage.
+  // Keep entries ordered newest to oldest; cards follow this list.
   const lifeUpdates = [
     {
-      slug: "seres-start",
-      label: "Jun 2026 · Internship",
-      title: "Joining Seres",
-      summary: "I think embodied Ai has been one of the most interesting fields of AI that I have been working with. I'm excited to get more experience in building those types of systems. And I hope to learn and contribute alot during my time here.",
+      slug: "website-2",
+      label: "September 2026",
+      title: "Website 2",
+      summary: "Another major website overhaul! This time I wanted to add more tiny components that represented me. And clear out misc things I didn’t like. I find it all real novel. Enjoy !",
       pinned: true
     },
     {
+      slug: "sockeye-v1",
+      label: "September 2026",
+      title: "Sockeye V1",
+      summary: "I have been developing a full robot deployment os and am approaching the first release. It has been very challenging and I have gone so far from where I began. I think I will name it sockeye after the red salmon.",
+      pinned: true
+    },
+    {
+      slug: "seres-start",
+      label: "Jun 2026",
+      title: "Joining Seres",
+      summary: "I think embodied Ai has been one of the most interesting fields of AI that I have been working with. I'm excited to get more experience in building those types of systems. And I hope to learn and contribute alot during my time here.",
+      media: [
+        {
+          type: "image",
+          src: "../assets/seres-logo.svg",
+          alt: "Seres logo with red lettering, black circular lines, and the Chinese name 赛力斯",
+          cardPosition: "right"
+        }
+      ],
+      pinned: false
+    },
+    {
       slug: "horse-bets",
-      label: "May 2026 · Game",
+      label: "May 2026",
       title: "Horse Bets",
       summary: "One of my fond memories from my childhood was going to the horse track with my family. I wanted to build a little horse betting game to capture some of that nostalgia. And after breifly playing a bit of balatro I think I have a fun idea. Release date: TBD",
       media: [
@@ -21,32 +44,60 @@
           caption: "Early Dev footage"
         }
       ],
-      pinned: true
+      pinned: false
     },
     {
       slug: "portfolio-rebuild",
-      label: "May 2026 · Personal",
-      title: "Website Live",
+      label: "May 2026",
+      title: "My Website is Live",
       summary: "After much deliberation between what I want my site to look like, what to display and all that. I finally got around to rebuilding my site. Still much to be done and added but I have a basket to dump my projects and thoughts into now."
     },
     {
+      slug: "chula-vista-2",
+      label: "April 2026",
+      title: "A trip to chula vista 2",
+      summary: "1000 miles in 2 days for an archery tournament and I disappointed did not perform well. Most likely my last collegiate one. Was fun though >:)",
+      pinned: false
+    },
+    {
+      slug: "chula-vista",
+      label: "February 2026",
+      title: "A trip to chula vista",
+      summary: "Never knew San Diego was so pretty. I wish I had my normal release </3",
+      pinned: false
+    },
+    {
       slug: "mugunghwa-start",
-      label: "Jan 2026 · Employment",
+      label: "Jan 2026",
       title: "Mugunghwa",
+      cardImage: {
+        src: "../assets/mugunghwa-logo.png",
+        alt: "Mugunghwa flower emblem",
+        wordmark: "MUGUNGHWA",
+        subtitle: "KOREAN RESTAURANT"
+      },
       summary: "I have never worked in food service before but here I am with a korean server job. The work is different what what I'm use to but very managable, and I get free korean food everyday. It does get kinda of busy though but the customers are cool.",
       pinned: false
     },
     {
+      slug: "westies",
+      label: "April 2025",
+      title: "Westies",
+      summary: "My first archery tournament and it is so windy! Long Beach has a big blue pyramid apparently second largest in the US after the bass pro shop.",
+      pinned: false
+    },
+    {
     slug: "uc-berkeley-start",
-    label: "Sep 2023 · Education",
-    title: "Entering UC Berkeley",
+    label: "Sep 2023",
+    title: "Entering college",
     summary: "I like the campus very much, it is pretty. Though the food around here is not much to be desired.",
     media: [
       {
         type: "image",
-        src: "https://brand.berkeley.edu/wp-content/uploads/2024/08/logo-variations-thumbnail-gold-blue-1.png",
+        src: "../assets/berkeley-logo.png",
         alt: "Official UC Berkeley wordmark in California Gold on Berkeley Blue",
-        caption: "Official UC Berkeley wordmark."
+        caption: "Official UC Berkeley wordmark.",
+        cardPosition: "right"
       }
     ],
     pinned: false
@@ -114,6 +165,8 @@
 
   function createUpdateCard(update) {
     const card = createElement("a", "update-card");
+    const cardImage = update.cardImage || update.media?.find(item => item.type === "image" && item.cardPosition);
+    if (cardImage?.cardPosition === "right") card.dataset.imagePosition = "right";
     card.href = window.AOT_CONTENT_URLS.memo(update);
     card.id = update.slug;
     card.dataset.updateSlug = update.slug;
@@ -126,9 +179,27 @@
 
     card.appendChild(meta);
     card.appendChild(title);
+    if (cardImage) card.appendChild(createMemoImage(cardImage));
     card.appendChild(copy);
 
     return card;
+  }
+
+  function createMemoImage(item) {
+    const figure = createElement("figure", "memo-card-image" + (item.wordmark ? " memo-card-image-wordmark" : ""));
+    const image = createElement("img");
+    image.src = item.src;
+    image.alt = item.alt || "";
+    image.loading = "lazy";
+    image.decoding = "async";
+    figure.appendChild(image);
+    if (item.wordmark) {
+      const text = createElement("div", "memo-card-wordmark");
+      text.appendChild(createElement("span", "memo-card-wordmark-name", item.wordmark));
+      if (item.subtitle) text.appendChild(createElement("span", "memo-card-wordmark-subtitle", item.subtitle));
+      figure.appendChild(text);
+    }
+    return figure;
   }
 
   function createMediaNode(item) {
@@ -253,6 +324,7 @@
       memoModalTitle.textContent = update.title || "";
       memoModalSummary.textContent = update.summary || "";
       memoModalMedia.replaceChildren();
+      if (update.cardImage) memoModalMedia.appendChild(createMemoImage(update.cardImage));
 
       if (update.details) {
         memoModalDetails.textContent = update.details;
@@ -266,10 +338,8 @@
         update.media.forEach(function (item) {
           memoModalMedia.appendChild(createMediaNode(item));
         });
-        memoModalMedia.hidden = false;
-      } else {
-        memoModalMedia.hidden = true;
       }
+      memoModalMedia.hidden = !memoModalMedia.childElementCount;
 
       memoModal.hidden = false;
       memoModal.querySelector(".project-modal-card").scrollTop = 0;

@@ -1,17 +1,148 @@
 (function () {
   // OWNER SETTINGS — add, remove, or reorder projects here.
-  // type: "work", "personal", or "school"; leave "" to show an em dash.
-  // lastUpdated: "YYYY-MM-DD"; leave "" until a real project date is available.
+  // type: "work" (Professional), "personal", "school", or "competition"; leave "" to show an em dash.
+  // lastUpdated: "YYYY-MM-DD" or readable date text like "July 2026"; "" shows an em dash.
   // function: short description in the history row. Full details stay in the popup.
   // nodeColor: resting node fill and glow. The active row uses highlightColor below.
-  // Timeline branches follow type; blank types stay on the main line.
+  // All projects share one timeline; type controls the label and filter.
+  // Locked types show an access-code prompt when opened. "work" means Professional.
+  // Add locked: true to an individual project to lock it outside these types.
+  const lockedProjectTypes = ["work"];
+  const isProjectLocked = project => lockedProjectTypes.includes(project.type) || project.locked === true;
+
   const projects = [
+    {
+      title: "IMU Transform Visualizer",
+      type: "work",
+      nodeColor: "#eeeeee",
+      lastUpdated: "July 2026",
+      function: "Visualize effects of Matrix transforms on live IMU",
+      tag: "",
+      description: "",
+      summary: "",
+      details: "",
+      chips: [],
+      stack: "",
+      media: []
+    },
+    {
+      title: "Robot Telemetry and Diagnostics GUI",
+      type: "work",
+      nodeColor: "#eeeeee",
+      lastUpdated: "July 2026",
+      function: "Live robot telemetry and diagnostics over network",
+      tag: "",
+      description: "",
+      summary: "",
+      details: "",
+      chips: [],
+      stack: "",
+      media: []
+    },
+    {
+      title: "Sockeye V1",
+      type: "work",
+      nodeColor: "#eeeeee",
+      lastUpdated: "September 2026",
+      function: "Custom Hardware agnostic robot OS (non-ROS)",
+      tag: "",
+      description: "",
+      summary: "",
+      details: "",
+      chips: [],
+      stack: "",
+      media: []
+    },
+    {
+      title: "Stochastic Data Scheduler",
+      type: "work",
+      nodeColor: "#eeeeee",
+      lastUpdated: "September 2026",
+      function: "Method for optimized observation freshness for Multi-Rate robot systems",
+      tag: "",
+      description: "",
+      summary: "",
+      details: "",
+      chips: [],
+      stack: "",
+      media: []
+    },
+    {
+      title: "Joint-IMU Data Synchronizer",
+      type: "work",
+      nodeColor: "#eeeeee",
+      lastUpdated: "September 2026",
+      function: "Method for minimizing joint-IMU time sync",
+      tag: "",
+      description: "",
+      summary: "",
+      details: "",
+      chips: [],
+      stack: "",
+      media: []
+    },
+    {
+      title: "Robot State Estimator",
+      type: "work",
+      nodeColor: "#eeeeee",
+      lastUpdated: "August 2026",
+      function: "Method for robotic state corrections from errored data",
+      tag: "",
+      description: "",
+      summary: "",
+      details: "",
+      chips: [],
+      stack: "",
+      media: []
+    },
+    {
+      title: "Module Manager System",
+      type: "work",
+      nodeColor: "#eeeeee",
+      lastUpdated: "August 2026",
+      function: "Manages dependencies, compatibilities, and resolves paths modules in the Sockeye V1 system",
+      tag: "",
+      description: "",
+      summary: "",
+      details: "",
+      chips: [],
+      stack: "",
+      media: []
+    },
+    {
+      title: "Robot Upper Body Motion Recorder",
+      type: "work",
+      nodeColor: "#eeeeee",
+      lastUpdated: "August 2026",
+      function: "Records upper body motions that can be used in real deployment",
+      tag: "",
+      description: "",
+      summary: "",
+      details: "",
+      chips: [],
+      stack: "",
+      media: []
+    },
+    {
+      title: "Motion Policy Control Switcher",
+      type: "work",
+      nodeColor: "#eeeeee",
+      lastUpdated: "September 2026",
+      function: "Allows for runtime switching of locomotion policies",
+      tag: "",
+      description: "",
+      summary: "",
+      details: "",
+      chips: [],
+      stack: "",
+      media: []
+    },
     {
       tag: "Locomotion · Robotics",
       title: "Robot Reinforcement Training",
-      type: "personal",
+      type: "school",
       nodeColor: "#eeeeee",
-      lastUpdated: "",
+      lastUpdated: "May 2026",
       function: "Train robot policies from video demonstrations.",
       displayTitleHtml: "Robot <em>Reinforcement</em> Training",
       description:
@@ -27,9 +158,9 @@
     {
       tag: "Gradient Descent · Pokemon",
       title: "Voltorb Flip Machine Learning Solver",
-      type: "",
+      type: "personal",
       nodeColor: "#eeeeee",
-      lastUpdated: "",
+      lastUpdated: "2025",
       function: "Optimize Voltorb Flip moves under uncertainty.",
       displayTitleHtml: "Voltorb Flip <em>Machine Learning</em> Solver",
       description:
@@ -45,9 +176,9 @@
     {
       tag: "Neuroevolution · Neural Networks",
       title: "Evolution N.E.A.T Simulator",
-      type: "",
+      type: "work",
       nodeColor: "#eeeeee",
-      lastUpdated: "",
+      lastUpdated: "2024",
       function: "Evolve neural network structures and weights.",
       displayTitleHtml: "Evolution <em>N.E.A.T</em> Simulator",
       description:
@@ -63,9 +194,9 @@
     {
       tag: "",
       title: "Guppy AI Speech Trainer",
-      type: "",
+      type: "competition",
       nodeColor: "#eeeeee",
-      lastUpdated: "",
+      lastUpdated: "2025",
       function: "AI-assisted speech training.",
       displayTitleHtml: "Guppy <em>AI</em> Speech Trainer",
       description:
@@ -81,9 +212,9 @@
     {
       tag: "",
       title: "Navify Map Pathfinder ",
-      type: "",
+      type: "competition",
       nodeColor: "#eeeeee",
-      lastUpdated: "",
+      lastUpdated: "2023",
       function: "Find routes on a map.",
       displayTitleHtml: "Navify <em>Map</em> Pathfinder ",
       description:
@@ -99,9 +230,9 @@
     {
       tag: "",
       title: "Chip8 Emulator",
-      type: "",
+      type: "personal",
       nodeColor: "#eeeeee",
-      lastUpdated: "",
+      lastUpdated: "2023",
       function: "Emulate CHIP-8 programs.",
       displayTitleHtml: "Chip8 <em>Emulator</em>",
       description:
@@ -117,9 +248,9 @@
     {
       tag: "",
       title: "SQL from Scratch",
-      type: "",
+      type: "school",
       nodeColor: "#eeeeee",
-      lastUpdated: "",
+      lastUpdated: "2023",
       function: "Run SQL queries in a custom C++ database engine.",
       displayTitleHtml: "<em>SQL</em> from scratch",
       description:
@@ -135,9 +266,9 @@
     {
       tag: "",
       title: "Maze Mini Game",
-      type: "",
+      type: "school",
       nodeColor: "#eeeeee",
-      lastUpdated: "",
+      lastUpdated: "2024",
       function: "Explore a maze in 2D and first person.",
       displayTitleHtml: "Maze Mini <em>Game<em>",
       description:
@@ -154,9 +285,9 @@
     {
       tag: "",
       title: "Graphing Calculator App",
-      type: "",
+      type: "school",
       nodeColor: "#eeeeee",
-      lastUpdated: "",
+      lastUpdated: "2023",
       function: "Parse functions and plot interactive graphs.",
       displayTitleHtml: "Graphing Calculator",
       description:
@@ -190,18 +321,24 @@
 
   // The static build reads this same list; keep editing the entries above.
   window.AOT_PROJECTS = projects;
+  window.AOT_IS_PROJECT_LOCKED = isProjectLocked;
   if (typeof document === "undefined") return;
 
   const projectsList = document.querySelector("[data-projects-list]");
   const historyTable = document.querySelector("[data-project-history]");
   const historyGraph = document.querySelector("[data-project-history-graph]");
   const projectFilter = document.querySelector("[data-project-filter]");
+  const projectSort = document.querySelector("[data-project-sort]");
   const projectCount = document.querySelector("[data-project-count]");
   const projectEmpty = document.querySelector("[data-project-empty]");
   const projectRows = new Map([...projectsList?.querySelectorAll(".project-row") || []]
     .map(row => [Number(row.dataset.projectIndex), row]));
   projectRows.forEach(row => row.querySelector(".project-title-button").setAttribute("aria-haspopup", "dialog"));
   const projectModal = document.getElementById("project-modal");
+  const modalCard = projectModal?.querySelector(".project-modal-card");
+  const modalContent = document.getElementById("project-modal-content");
+  const modalLock = document.getElementById("project-modal-lock");
+  const modalAccessCode = document.getElementById("project-access-code");
   const modalTitle = document.getElementById("project-modal-title");
   const modalTag = document.getElementById("project-modal-tag");
   const modalSummary = document.getElementById("project-modal-summary");
@@ -213,7 +350,7 @@
   let lastProjectTrigger = null;
   let hoveredProject = null, focusedProject = null, selectedProject = null;
   const highlightColor = "#a4ffcb";
-  const projectTypes = { work: "Work", personal: "Personal", school: "School" };
+  const projectTypes = { work: "Professional", personal: "Personal", school: "School", competition: "Competition" };
   const dateFormatter = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
   function createElement(tagName, className, text) {
@@ -257,10 +394,11 @@
 
     const updatedCell = createElement("td", "project-updated-cell");
     updatedCell.append(createElement("span", "project-mobile-label", "Last updated"));
-    const date = /^\d{4}-\d{2}-\d{2}$/.test(project.lastUpdated || "") ? new Date(project.lastUpdated + "T00:00:00Z") : null;
-    const validDate = date && !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === project.lastUpdated;
-    const updated = createElement(validDate ? "time" : "span", "project-updated", validDate ? dateFormatter.format(date) : "—");
-    if (validDate) updated.dateTime = project.lastUpdated;
+    const dateText = String(project.lastUpdated ?? "").trim();
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(dateText) ? new Date(dateText + "T00:00:00Z") : null;
+    const validDate = date && !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === dateText;
+    const updated = createElement(validDate ? "time" : "span", "project-updated", validDate ? dateFormatter.format(date) : dateText || "—");
+    if (validDate) updated.dateTime = dateText;
     updatedCell.append(updated);
     row.append(graph, typeCell, nameCell, functionCell, updatedCell);
     return row;
@@ -274,12 +412,11 @@
     const bounds = historyTable.getBoundingClientRect();
     const width = historyGraph.getBoundingClientRect().width;
     historyGraph.setAttribute("viewBox", "0 0 " + width + " " + bounds.height);
-    const trunkX = width * .18;
-    const lanes = { unset: trunkX, work: width * .4, personal: width * .62, school: width * .84 };
+    const nodeX = width * .4;
     const points = rows.map(row => {
       const title = row.querySelector(".project-title-button").getBoundingClientRect();
       const project = projects[Number(row.dataset.projectIndex)];
-      return { type: row.dataset.projectType, color: project.nodeColor || "#eeeeee", index: row.dataset.projectIndex,
+      return { color: project.nodeColor || "#eeeeee", index: row.dataset.projectIndex,
         y: title.top + title.height / 2 - bounds.top };
     });
     function draw(tag, attributes, parent = historyGraph) {
@@ -289,20 +426,10 @@
       return shape;
     }
     const top = Math.max(0, points[0].y - 22), bottom = Math.min(bounds.height, points.at(-1).y + 22);
-    draw("path", { class: "project-history-trunk", d: `M${trunkX} ${top} V${bottom}` });
-    Object.keys(projectTypes).forEach(type => {
-      const branch = points.filter(point => point.type === type);
-      if (!branch.length) return;
-      const x = lanes[type], start = branch[0].y, end = branch.at(-1).y;
-      draw("path", {
-        class: "project-history-branch", "data-project-type": type,
-        d: `M${trunkX} ${start - 22} C${trunkX} ${start - 10} ${x} ${start - 12} ${x} ${start} V${end} C${x} ${end + 12} ${trunkX} ${end + 10} ${trunkX} ${end + 22}`
-      });
-    });
+    draw("path", { class: "project-history-trunk", d: `M${nodeX} ${top} V${bottom}` });
     points.forEach((point, index) => {
-      const x = lanes[point.type];
-      const node = draw("g", { class: "project-history-node", transform: `translate(${x} ${point.y})`,
-        "data-node-x": x, "data-node-y": point.y, "data-project-index": point.index });
+      const node = draw("g", { class: "project-history-node", transform: `translate(${nodeX} ${point.y})`,
+        "data-node-x": nodeX, "data-node-y": point.y, "data-project-index": point.index });
       node.style.setProperty("--project-node-color", point.color);
       node.style.setProperty("--project-pulse-delay", (-index * .4) + "s");
       draw("circle", { class: "project-history-halo", r: 8 }, node);
@@ -350,14 +477,28 @@
   function openProjectModal(project, trigger) {
     selectedProject = trigger.closest(".project-row").dataset.projectIndex;
     highlightProjectNode();
-    modalTitle.textContent = project.title || "";
-    modalTag.textContent = project.tag || "";
-    modalSummary.textContent = project.summary || project.description || "";
-    modalDetails.textContent = project.details || "";
-    modalStack.textContent = getProjectStackText(project);
+    const locked = isProjectLocked(project);
+    modalCard.classList.toggle("is-locked", locked);
+    modalContent.hidden = locked;
+    modalLock.hidden = !locked;
+    // Placeholder only: codes are not submitted, stored, or validated yet.
+    modalAccessCode.value = "";
+    if (locked) {
+      modalCard.removeAttribute("aria-labelledby");
+      modalCard.setAttribute("aria-label", project.title.trim() + " — details locked");
+    } else {
+      modalCard.removeAttribute("aria-label");
+      modalCard.setAttribute("aria-labelledby", "project-modal-title");
+    }
+    modalTitle.textContent = locked ? "" : project.title || "";
+    modalTag.textContent = locked ? "" : project.tag || "";
+    modalSummary.textContent = locked ? "" : project.summary || project.description || "";
+    modalDetails.textContent = locked ? "" : project.details || "";
+    modalStack.textContent = locked ? "" : getProjectStackText(project);
+    modalMedia.querySelectorAll("video").forEach(video => video.pause());
     modalMedia.replaceChildren();
 
-    if (project.media && project.media.length > 0) {
+    if (!locked && project.media && project.media.length > 0) {
       project.media.forEach(function (item) {
         modalMedia.appendChild(createMediaNode(item));
       });
@@ -367,7 +508,7 @@
     }
 
     projectModal.hidden = false;
-    projectModal.querySelector(".project-modal-card").scrollTop = 0;
+    modalCard.scrollTop = 0;
     document.body.classList.add("modal-open");
     lastProjectTrigger = trigger;
     modalCloseButton.focus({ preventScroll: true });
@@ -375,6 +516,7 @@
 
   function closeProjectModal() {
     projectModal.querySelectorAll("video").forEach(video => video.pause());
+    modalAccessCode.value = "";
     projectModal.hidden = true;
     document.body.classList.remove("modal-open");
     selectedProject = null;
@@ -388,7 +530,7 @@
     hoveredProject = focusedProject = null;
     projectsList.replaceChildren();
     let count = 0;
-    projects.forEach(function (project, index) {
+    window.AOT_SORT_PROJECTS(projects, projectSort?.value || "newest").forEach(function ({ project, index }) {
       if (projectFilter && projectFilter.value !== "all" && project.type !== projectFilter.value) return;
       if (!projectRows.has(index)) projectRows.set(index, createProjectItem(project, index));
       projectsList.appendChild(projectRows.get(index));
@@ -406,8 +548,10 @@
 
   renderProjects();
   if (projectFilter) projectFilter.disabled = false;
+  if (projectSort) projectSort.disabled = false;
   historyTable.projectEntrance = window.createProjectsEntrance?.(historyTable.closest("main"), historyTable);
   projectFilter?.addEventListener("change", renderProjects);
+  projectSort?.addEventListener("change", renderProjects);
   if ("ResizeObserver" in window) new ResizeObserver(drawHistoryGraph).observe(historyTable);
   else window.addEventListener("resize", drawHistoryGraph);
   document.fonts?.ready.then(drawHistoryGraph);
