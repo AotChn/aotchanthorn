@@ -119,3 +119,9 @@ Commit the source files you edited, plus any new assets, and push to `main`. The
 Slugs must be unique within each list and use lowercase words separated by hyphens. The build reports invalid or duplicate slugs instead of publishing conflicting pages. Archive links update automatically when memos grow beyond `pageSize`.
 
 The footer date is separate from project dates. To change it again, replace `Current as of September 27, 2026` in the five page files under [html/](html/).
+
+## Website analytics
+
+Vercel Web Analytics uses the [plain-HTML integration](https://vercel.com/docs/analytics/quickstart) in [js/vercel-analytics.js](js/vercel-analytics.js), so no npm package is needed. All main pages, memo archives, and standalone project/memo pages include the loader. It runs only on `aotchn.com` and `www.aotchn.com`; local and Vercel preview visits are excluded. Update `productionHosts` if you change your domain.
+
+Enable **Web Analytics** for the `aotchanthorn` project in Vercel, then deploy. View visitors and page views in the project's **Analytics** dashboard. The existing Google Analytics setup remains separate. Vercel automatically tracks page views; the access-code field and its contents are not tracked by this integration.

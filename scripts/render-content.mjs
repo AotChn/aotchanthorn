@@ -156,6 +156,7 @@ ${fonts}
 <link rel="stylesheet" href="/css/portfolio.css"><link rel="stylesheet" href="/css/content-pages.css">
 <noscript><link rel="stylesheet" href="/css/no-script.css"></noscript>
 <script src="/js/ga4.js"></script><script src="/js/animation-preferences.js"></script><script src="/js/audio-preferences.js"></script>
+<script defer src="/js/vercel-analytics.js"></script>
 </head><body>
 ${nav}
 <main class="page-shell page-main content-page"><article${locked ? ` aria-label="${text(entry.title.trim())} — details locked"` : ""}>

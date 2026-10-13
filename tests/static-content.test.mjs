@@ -97,6 +97,8 @@ test("all generated same-site entry/archive links and canonical pages resolve", 
     const html = read("html/" + page);
     assert(html.includes('class="volume-toggle"'), `${page} needs the sound toggle`);
     assert(html.includes('js/audio-preferences.js'), `${page} needs sound preferences`);
+    assert.equal((html.match(/<script defer src="(?:\.\.|)\/js\/vercel-analytics\.js"><\/script>/g) || []).length, 1,
+      `${page} needs exactly one deferred analytics loader`);
     assert(html.indexOf('js/audio-preferences.js') < html.indexOf('js/nav.js'), `${page} must load sound preferences before navigation`);
     for (const [, href] of html.matchAll(/href="([^"]+)"/g)) {
       const url = new URL(href.replaceAll("&amp;", "&"), "https://aotchn.com/html/" + page);
